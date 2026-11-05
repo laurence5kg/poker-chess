@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="description" content="Poker Chess (扑克军棋) - A turn-based strategy game combining Military Chess (Junqi), Shogi Mochigoma drops, and Poker hierarchy under Fog-of-War.">
+    <title>Poker Chess</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🃏</text></svg>">
+    <link rel="canonical" href="./">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Poker Chess (扑克军棋)">
+    <meta property="og:description" content="A tactical turn-based strategy game combining Military Chess (Junqi), Shogi Mochigoma drops, and Poker hierarchy under Fog-of-War.">
+    <meta property="og:image" content="favicon.svg">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Poker Chess (扑克军棋)">
+    <meta name="twitter:description" content="A tactical turn-based strategy game combining Military Chess (Junqi), Shogi Mochigoma drops, and Poker hierarchy under Fog-of-War.">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="alternate icon" href="favicon.ico">
+    <link rel="canonical" href="./">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Poker Chess (扑克军棋)">
+    <meta property="og:description" content="A tactical turn-based strategy game combining Military Chess (Junqi), Shogi Mochigoma drops, and Poker hierarchy under Fog-of-War.">
+    <meta property="og:image" content="favicon.svg">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Poker Chess (扑克军棋)">
+    <meta name="twitter:description" content="A tactical turn-based strategy game combining Military Chess (Junqi), Shogi Mochigoma drops, and Poker hierarchy under Fog-of-War.">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="alternate icon" href="favicon.ico">
+    <link rel="stylesheet" href="style.css?v=1.0.0">
+</head>
+<body data-theme="felt">
+
+    <!-- Dedicated Full Homepage Screen -->
+    <div id="homepageScreen" class="homepage-screen">
+        <header class="home-header">
+            <div class="logo-area">
+                <div class="logo-title">POKER CHESS</div>
+            </div>
+            <div class="home-header-controls">
+                <button id="homeRulebookBtn">Rulebook</button>
+                <button id="homeSettingsBtn">Settings</button>
+            </div>
+        </header>
+
+        <div class="homepage-main">
+            <div class="homepage-card">
+                <div class="homepage-hero">
+                    <h1 id="homeTitle" class="homepage-title">POKER CHESS</h1>
+                </div>
+
+                <!-- Mode Switch Tabs: PvE vs PvP -->
+                <div class="mode-tabs">
+                    <button id="tabBtnPve" class="mode-tab-btn active">PvE</button>
+                    <button id="tabBtnPvp" class="mode-tab-btn">PvP</button>
+                </div>
+
+                <!-- PvE Configuration Panel -->
+                <div id="panelPve" class="mode-panel active">
+                    <div class="home-section">
+                        <div class="home-section-title" id="homeAiTitle">CPU Level</div>
+                        <div class="option-cards-grid simple-grid">
+                            <label class="option-card">
+                                <input type="radio" name="pveAiLevel" value="low">
+                                <span class="card-title" id="homeAiLowTitle">Low</span>
+                            </label>
+                            <label class="option-card selected">
+                                <input type="radio" name="pveAiLevel" value="medium" checked>
+                                <span class="card-title" id="homeAiMedTitle">Medium</span>
+                            </label>
+                            <label class="option-card">
+                                <input type="radio" name="pveAiLevel" value="high">
+                                <span class="card-title" id="homeAiHighTitle">High</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="home-section">
+                        <div class="home-section-title" id="homeSideTitle">Side</div>
+                        <div class="side-selector-row">
+                            <label class="side-choice-card selected">
+                                <input type="radio" name="pveSide" value="red" checked>
+                                <span class="side-badge badge-red" id="homePveSideRed">Red</span>
+                            </label>
+                            <label class="side-choice-card">
+                                <input type="radio" name="pveSide" value="black">
+                                <span class="side-badge badge-black" id="homePveSideBlack">Black</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="home-actions">
+                        <button id="launchPveBtn" class="primary launch-btn">Start Game</button>
+                    </div>
+                </div>
+
+                <!-- PvP Configuration Panel -->
+                <div id="panelPvp" class="mode-panel">
+                    <div class="home-section">
+                        <div class="home-section-title" id="homePvpModeTitle">Mode</div>
+                        <div class="option-cards-grid simple-grid">
+                            <label class="option-card selected">
+                                <input type="radio" name="pvpModeType" value="1v1" checked>
+                                <span class="card-title" id="homePvp1v1Title">1v1</span>
+                            </label>
+                            <label class="option-card">
+                                <input type="radio" name="pvpModeType" value="2v2">
+                                <span class="card-title" id="homePvp2v2Title">2v2</span>
+                            </label>
+                            <label class="option-card">
+                                <input type="radio" name="pvpModeType" value="ffa">
+                                <span class="card-title" id="homePvpFfaTitle">1v1v1v1</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- PvP 1v1 Options -->
+                    <div id="pvp1v1SubOptions" class="home-section">
+                        <div class="home-section-title" id="homePvp1v1SideTitle">Side</div>
+                        <div class="side-selector-row">
+                            <label class="side-choice-card selected">
+                                <input type="radio" name="pvp1v1Side" value="red" checked>
+                                <span class="side-badge badge-red" id="homePvpSideRed">Red</span>
+                            </label>
+                            <label class="side-choice-card">
+                                <input type="radio" name="pvp1v1Side" value="black">
+                                <span class="side-badge badge-black" id="homePvpSideBlack">Black</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- PvP 2v2 Options (Alliance & Seating) -->
+                    <div id="pvp2v2SubOptions" class="home-section" style="display:none;">
+                        <div class="home-section-title" id="homePvpAllianceTitle">Side</div>
+                        <div class="side-selector-row">
+                            <label class="side-choice-card selected">
+                                <input type="radio" name="pvp2v2Alliance" value="clubs" checked>
+                                <span class="side-badge badge-black" id="homeAllianceClubs">Clubs</span>
+                            </label>
+                            <label class="side-choice-card">
+                                <input type="radio" name="pvp2v2Alliance" value="hearts">
+                                <span class="side-badge badge-red" id="homeAllianceHearts">Hearts</span>
+                            </label>
+                        </div>
+
+                        <div style="margin-top:14px;">
+                            <div class="home-section-title" id="homePvpSeatingTitle" style="font-size:0.8rem;">Seating</div>
+                            <select id="homeSeatingSelect" class="home-select">
+                                <option value="opposite" id="homeOptSeatOpposite">A/C vs B/D</option>
+                                <option value="adj_nw_se" id="homeOptSeatAdjNwSe">A/B vs C/D</option>
+                                <option value="adj_ne_sw" id="homeOptSeatAdjNeSw">A/D vs B/C</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- PvP FFA Options -->
+                    <div id="pvpFfaSubOptions" class="home-section" style="display:none;">
+                        <div class="home-section-title" id="homePvpFfaSeatTitle">Seat</div>
+                        <div class="option-cards-grid simple-grid" style="grid-template-columns: repeat(4, 1fr);">
+                            <label class="side-choice-card selected">
+                                <input type="radio" name="pvpFfaSeat" value="a" checked>
+                                <span class="side-badge badge-red" id="homeSeatA">A</span>
+                            </label>
+                            <label class="side-choice-card">
+                                <input type="radio" name="pvpFfaSeat" value="b">
+                                <span class="side-badge badge-black" id="homeSeatB">B</span>
+                            </label>
+                            <label class="side-choice-card">
+                                <input type="radio" name="pvpFfaSeat" value="c">
+                                <span class="side-badge badge-red" id="homeSeatC">C</span>
+                            </label>
+                            <label class="side-choice-card">
+                                <input type="radio" name="pvpFfaSeat" value="d">
+                                <span class="side-badge badge-black" id="homeSeatD">D</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="home-actions">
+                        <button id="launchPvpBtn" class="primary launch-btn">Start Game</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Game Screen (Shown after entering game) -->
+    <div id="gameScreen" class="game-screen" style="display:none;">
+        <!-- Header Navigation: ONLY 3 BUTTONS -->
+        <header>
+            <div class="logo-area">
+                <div id="uiTitle" class="logo-title">POKER CHESS</div>
+            </div>
+            <div class="control-bar">
+                <button id="settingsBtn">Settings</button>
+                <button id="newGameBtn">New Game</button>
+                <button id="homeBtn" title="Return to Homepage">Homepage</button>
+            </div>
+        </header>
+
+        <!-- Top Status Bar & Anti-Mutiny Caps (Hidden during Deployment Phase) -->
+        <div id="statusBar" class="status-bar">
+            <div id="turnDisplay" class="turn-pill turn-red">Red's Turn</div>
+            <div id="mutinyCaps" class="mutiny-caps"></div>
+        </div>
+
+        <!-- Deployment Phase Toolbar (Shown only during Setup) -->
+        <div id="setupToolbar" class="setup-toolbar">
+            <div class="setup-info">
+                <span id="uiDeployPhaseLabel" style="font-weight:700; color:var(--gold);">DEPLOYMENT:</span>
+                <span><span id="uiCampLabel">Camp</span>: <strong id="setupCampCount">0/25</strong></span>
+                <span><span id="uiReservesLabel">Reserves</span>: <strong id="setupReserveCount">0/2</strong></span>
+                <span><span id="uiUnplacedLabel">Unplaced</span>: <strong id="setupUnplacedCount">27</strong></span>
+                <span id="setupStatusMessage" class="setup-warning"></span>
+            </div>
+            <div class="setup-actions">
+                <button id="setupAutoBtn" title="Auto-fill a legal formation you can customize">Auto-Fill Preset</button>
+                <button id="setupClearBtn" title="Reset all cards to unplaced tray">Clear Formation</button>
+                <button id="setupConfirmBtn" class="primary" style="font-weight:800;">Confirm & Battle</button>
+            </div>
+        </div>
+
+        <!-- Main Arena Viewport -->
+        <div class="arena-container">
+
+            <!-- Left Sidebar: Player 2 (Black) Reserves & Graveyard -->
+            <aside class="sidebar">
+                <div class="panel-section">
+                    <div class="panel-header">
+                        <span id="uiP2StartingHeader">Black Reserve</span>
+                    </div>
+                    <div id="p2StartingTray" class="card-tray" data-empty-text="Empty Reserve"></div>
+                </div>
+
+                <div id="p2MochigomaSection" class="panel-section">
+                    <div class="panel-header">
+                        <span id="uiP2MochiHeader">Black Conscripts</span>
+                    </div>
+                    <div id="p2MochigomaTray" class="card-tray" data-empty-text="Empty Reserve"></div>
+                </div>
+
+                <div id="graveyardSection" class="panel-section" style="flex:1;">
+                    <div class="panel-header">
+                        <span id="uiGraveyardHeader">Graveyard</span>
+                    </div>
+                    <div id="graveyardList" class="move-log-box" style="flex:1;"></div>
+                </div>
+            </aside>
+
+            <!-- Center Board Viewport: Luxury Casino Table Suite -->
+            <main class="board-viewport">
+                <div class="poker-table-wrapper">
+                    <!-- Padded Leather Outer Armrest Rail -->
+                    <div class="poker-table-rail">
+                        <!-- Polished Mahogany Wood Racetrack -->
+                        <div class="poker-table-track">
+                            <!-- Brass Inset Drink Cup Holders -->
+                            <div class="brass-cup-holder cup-tl" title="Brass Cup Holder"></div>
+                            <div class="brass-cup-holder cup-tr" title="Brass Cup Holder"></div>
+                            <div class="brass-cup-holder cup-bl" title="Brass Cup Holder"></div>
+                            <div class="brass-cup-holder cup-br" title="Brass Cup Holder"></div>
+
+                            <!-- Embedded Wooden Chip Racks with Casino Chips -->
+                            <div class="poker-chip-rack rack-top" title="Casino Chip Tray">
+                                <span class="poker-chip chip-gold"></span>
+                                <span class="poker-chip chip-red"></span>
+                                <span class="poker-chip chip-blue"></span>
+                                <span class="poker-chip chip-green"></span>
+                                <span class="poker-chip chip-black"></span>
+                            </div>
+                            <div class="poker-chip-rack rack-bottom" title="Casino Chip Tray">
+                                <span class="poker-chip chip-gold"></span>
+                                <span class="poker-chip chip-red"></span>
+                                <span class="poker-chip chip-blue"></span>
+                                <span class="poker-chip chip-green"></span>
+                                <span class="poker-chip chip-black"></span>
+                            </div>
+
+                            <!-- Inner Baize Playing Felt with Inlaid Gold Filigree -->
+                            <div class="poker-table-felt">
+                                <div class="table-filigree-rim"></div>
+                                <div id="boardGrid" class="board-grid"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Right Sidebar: Player 1 (Red) Reserves -->
+            <aside class="sidebar right">
+                <!-- Setup Phase Unplaced Cards Tray -->
+                <div id="setupUnplacedSection" class="panel-section" style="display:none; flex:1;">
+                    <div class="panel-header">
+                        <span id="uiUnplacedHeader">Unplaced Cards</span>
+                    </div>
+                    <div id="unplacedTray" class="card-tray" style="flex:1; max-height:none; min-height:180px;" data-empty-text="No Unplaced Cards"></div>
+                </div>
+
+                <div class="panel-section">
+                    <div class="panel-header">
+                        <span id="uiP1StartingHeader">Red Reserve</span>
+                    </div>
+                    <div id="p1StartingTray" class="card-tray" data-empty-text="Empty Reserve"></div>
+                </div>
+
+                <div id="p1MochigomaSection" class="panel-section">
+                    <div class="panel-header">
+                        <span id="uiP1MochiHeader">Red Conscripts</span>
+                    </div>
+                    <div id="p1MochigomaTray" class="card-tray" data-empty-text="Empty Reserve"></div>
+                </div>
+            </aside>
+
+        </div>
+    </div>
+
+    <!-- Unified Settings Modal -->
+    <div id="settingsModal" class="modal-overlay" style="display:none;">
+        <div class="modal-content" style="max-width:560px;">
+            <h2 id="stgModalTitle" style="color:var(--gold); margin-bottom:16px;">Game Settings</h2>
+            
+            <!-- Language Setting -->
+            <div class="settings-group">
+                <span id="stgLangHeading" class="settings-label">Language / 语言系统</span>
+                <div class="radio-row">
+                    <label>
+                        <input type="radio" name="langRadio" value="en"> English
+                    </label>
+                    <label>
+                        <input type="radio" name="langRadio" value="zh"> 简体中文
+                    </label>
+                </div>
+            </div>
+
+            <!-- Card Art Style Setting -->
+            <div class="settings-group">
+                <span id="stgCardStyleHeading" class="settings-label">Card Style</span>
+                <div class="radio-row">
+                    <label>
+                        <input type="radio" name="cardStyleRadio" value="simplified"> <span id="stgStyleSimplified">Simplified</span>
+                    </label>
+                    <label>
+                        <input type="radio" name="cardStyleRadio" value="art"> <span id="stgStyleArt">Art Mode</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Appearance Theme Setting -->
+            <div class="settings-group">
+                <span id="stgThemeHeading" class="settings-label">Board Appearance</span>
+                <div class="radio-row" style="flex-direction:column; align-items:flex-start; gap:8px;">
+                    <label>
+                        <input type="radio" name="themeRadio" value="felt"> <span id="stgThemeFelt">Classic Felt</span>
+                    </label>
+                    <label>
+                        <input type="radio" name="themeRadio" value="wood"> <span id="stgThemeWood">Mahogany Wood</span>
+                    </label>
+                    <label>
+                        <input type="radio" name="themeRadio" value="obsidian"> <span id="stgThemeObsidian">Obsidian Midnight</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Audio Setting -->
+            <div class="settings-group">
+                <span id="stgSoundHeading" class="settings-label">Sound Effects</span>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span id="stgSoundDesc" style="font-size:0.78rem; color:#9cb5a8;">Web Audio sfx</span>
+                    <button id="stgSoundToggleBtn">Sound Enabled</button>
+                </div>
+            </div>
+
+            <!-- Rulebook Access -->
+            <div class="settings-group">
+                <span id="stgRulebookHeading" class="settings-label">Rulebook</span>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-size:0.78rem; color:#9cb5a8;">Tactical rules & hierarchy</span>
+                    <button id="openRulebookFromStgBtn" class="primary">Open Rulebook</button>
+                </div>
+            </div>
+
+            <div style="margin-top:16px;">
+                <button id="closeSettingsBtn" class="primary" style="padding:8px 32px; font-size:0.95rem;">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Clash Resolution Modal -->
+    <div id="clashModal" class="modal-overlay" style="display:none;">
+        <div class="modal-content">
+            <h2 id="uiClashTitle" style="color:var(--gold); margin-bottom:12px;">COMBAT CLASH REVEAL</h2>
+            <div class="clash-stage">
+                <div id="clashAttacker" class="clash-card-showcase"></div>
+                <div class="clash-vs">VS</div>
+                <div id="clashDefender" class="clash-card-showcase"></div>
+            </div>
+            <div id="clashVerdict" class="clash-verdict"></div>
+            <button id="clashCloseBtn" class="primary" style="padding:8px 24px; font-size:0.95rem;">Continue Battle</button>
+        </div>
+    </div>
+
+    <!-- Full-Size Card Inspection Modal -->
+    <div id="cardInspectModal" class="modal-overlay" style="display:none;">
+        <div class="modal-content" style="max-width:380px; text-align:center;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h3 id="inspectTitle" style="color:var(--gold); font-size:1.05rem;">Card Details</h3>
+                <button id="closeInspectBtn" style="padding:2px 8px; font-weight:800;">✕</button>
+            </div>
+            <div id="inspectCardContainer" style="display:flex; justify-content:center; margin:16px 0;"></div>
+            <div id="inspectCardInfo" style="font-size:0.85rem; color:#d8e2dc; line-height:1.5;"></div>
+        </div>
+    </div>
+
+    <!-- Complete Localized Rulebook Modal -->
+    <div id="rulesModal" class="modal-overlay" style="display:none;">
+        <div class="modal-content" style="max-width:720px; text-align:left; max-height:85vh; overflow-y:auto;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h2 id="rulebookTitle" style="color:var(--gold);">Official Rulebook & Reference</h2>
+                <button id="closeRulesBtn">✕ Close</button>
+            </div>
+            
+            <div id="rulebookContent" style="font-size:0.85rem; color:#e0eae4; line-height:1.6;">
+                <!-- Dynamically injected via i18n -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Dedicated Game Over Modal -->
+    <div id="gameOverModal" class="modal-overlay" style="display:none;">
+        <div class="modal-content" style="max-width:440px; text-align:center;">
+            <h2 id="gameOverTitle" style="color:var(--gold); margin-bottom:12px;">VICTORY</h2>
+            <p id="gameOverReason" style="font-size:0.95rem; color:#e0eae4; line-height:1.6; margin-bottom:20px;"></p>
+            <div style="display:flex; justify-content:center; gap:16px;">
+                <button id="gameOverNewGameBtn" class="primary" style="padding:8px 24px;">New Game</button>
+                <button id="gameOverHomeBtn" style="padding:8px 24px;">Homepage</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Non-blocking Toast Notification -->
+    <div id="toastNotice" class="toast-notice" aria-live="polite"></div>
+
+    <!-- Scripts -->
+    <script src="i18n.js?v=1.0.0"></script>
+    <script src="audio.js?v=1.0.0"></script>
+    <script src="game.js?v=1.0.0"></script>
+    <script src="app.js?v=1.0.0"></script>
+</body>
+</html>

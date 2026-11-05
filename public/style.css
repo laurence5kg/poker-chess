@@ -1,0 +1,1759 @@
+/* Theme Variables */
+:root {
+    --bg-dark: #0a130f;
+    --felt-green: #113322;
+    --felt-light: #18442d;
+    --wood-border: #4a2c16;
+    --gold: #d4af37;
+    --gold-glow: rgba(212, 175, 55, 0.45);
+    --red-card: #b81414;
+    --black-card: #18191a;
+    --accent-glow: #2ecc71;
+    --danger-glow: #e74c3c;
+    --text-light: #f0f3f1;
+    --board-bg: radial-gradient(circle at center, #173d2a 0%, #0d1e15 85%);
+    --panel-bg: #15271e;
+    --panel-border: #284737;
+    --tile-bg: #113322;
+    --tile-border: #235239;
+    --frontline-bg: #173326;
+}
+
+/* 🪵 Mahogany Wood Theme */
+body[data-theme="wood"] {
+    --bg-dark: #140d09;
+    --felt-green: #2e1a12;
+    --felt-light: #3d2419;
+    --wood-border: #5c3017;
+    --gold: #e5b95c;
+    --gold-glow: rgba(229, 185, 92, 0.45);
+    --board-bg: radial-gradient(circle at center, #361f15 0%, #170c07 85%);
+    --panel-bg: #22140e;
+    --panel-border: #42261b;
+    --tile-bg: #2b170f;
+    --tile-border: #42281c;
+    --frontline-bg: #381f14;
+}
+
+/* 🌌 Midnight Obsidian Theme */
+body[data-theme="obsidian"] {
+    --bg-dark: #06070a;
+    --felt-green: #10141e;
+    --felt-light: #181e2b;
+    --wood-border: #1f293d;
+    --gold: #4da6ff;
+    --gold-glow: rgba(77, 166, 255, 0.45);
+    --board-bg: radial-gradient(circle at center, #131826 0%, #06080e 85%);
+    --panel-bg: #0f1420;
+    --panel-border: #1e283d;
+    --tile-bg: #10141e;
+    --tile-border: #222b3d;
+    --frontline-bg: #171d2b;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-light);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Microsoft YaHei", sans-serif;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+    transition: background 0.3s ease;
+}
+
+/* Header & Controls */
+header {
+    background: linear-gradient(180deg, #18221c 0%, #0d1612 100%);
+    border-bottom: 2px solid var(--wood-border);
+    padding: 8px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    z-index: 10;
+}
+
+.logo-area {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo-title {
+    font-size: 1.15rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: var(--gold);
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+}
+
+.logo-subtitle {
+    font-size: 0.75rem;
+    color: #9cb3a5;
+}
+
+.ui-icon {
+    width: 14px;
+    height: 14px;
+    stroke: var(--gold);
+    fill: none;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vertical-align: middle;
+    flex-shrink: 0;
+    margin-right: 5px;
+}
+
+.control-bar {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.control-bar button,
+.home-header-controls button {
+    width: 88px;
+    height: 30px;
+    padding: 0;
+    box-sizing: border-box;
+    background: linear-gradient(180deg, #1f3529 0%, #13241b 100%) !important;
+    border: 1px solid rgba(212, 175, 55, 0.45) !important;
+    color: #e0eae4 !important;
+    border-radius: 5px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+}
+
+.control-bar button:hover,
+.home-header-controls button:hover {
+    background: linear-gradient(180deg, #2b4939 0%, #1a3024 100%) !important;
+    border-color: var(--gold) !important;
+    color: #fff !important;
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+    transform: translateY(-1px);
+}
+
+button {
+    background: #20352b;
+    color: #e0eae4;
+    border: 1px solid #3d6350;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+button:hover {
+    background: #2d4c3d;
+    border-color: var(--gold);
+    color: #fff;
+}
+
+button.primary {
+    background: linear-gradient(180deg, #997c23 0%, #685210 100%);
+    border-color: var(--gold);
+    color: #fff;
+}
+
+button.primary:hover {
+    background: linear-gradient(180deg, #bfa035 0%, #856916 100%);
+}
+
+select {
+    background: #182920;
+    color: #e0eae4;
+    border: 1px solid #3d6350;
+    border-radius: 6px;
+    padding: 5px 8px;
+    font-size: 0.82rem;
+    cursor: pointer;
+}
+
+/* Setup Toolbar */
+.setup-toolbar {
+    background: #1b2e23;
+    border-bottom: 2px solid var(--gold);
+    padding: 8px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.3);
+}
+
+.setup-info {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.setup-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.setup-warning {
+    color: #ff6b6b;
+    font-weight: 700;
+    font-size: 0.8rem;
+}
+
+.tile.invalid-frontline {
+    border: 2px solid #e74c3c !important;
+    background: rgba(231, 76, 60, 0.35) !important;
+    animation: pulse-danger 1s infinite;
+}
+
+.tile.invalid-frontline::after {
+    content: "NO MINE/FLAG";
+    position: absolute;
+    bottom: 2px;
+    font-size: 0.5rem;
+    color: #ff9999;
+    font-weight: 900;
+    background: rgba(0,0,0,0.7);
+    padding: 1px 3px;
+    border-radius: 2px;
+    pointer-events: none;
+    z-index: 10;
+}
+
+@keyframes pulse-danger {
+    0% { box-shadow: 0 0 4px #e74c3c; }
+    50% { box-shadow: 0 0 14px #e74c3c; }
+    100% { box-shadow: 0 0 4px #e74c3c; }
+}
+
+/* Status & Mutiny Bar */
+.status-bar {
+    background: #0d1a14;
+    border-bottom: 1px solid #233e30;
+    padding: 6px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+}
+
+.turn-pill {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.turn-red {
+    background: #5c1111;
+    color: #ffb8b8;
+    border: 1px solid #a82e2e;
+}
+
+.turn-black {
+    background: #25282c;
+    color: #d1d8e0;
+    border: 1px solid #545b63;
+}
+
+.mutiny-caps {
+    display: flex;
+    gap: 16px;
+    font-size: 0.8rem;
+}
+
+.cap-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 6px;
+    background: rgba(0,0,0,0.35);
+    border: 1px solid rgba(212, 175, 55, 0.25);
+    color: #dbe7df;
+    font-size: 0.8rem;
+}
+
+.cap-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+    margin-right: 4px;
+}
+
+.cap-dot.dot-red {
+    background: #e74c3c;
+    box-shadow: 0 0 6px rgba(231, 76, 60, 0.75);
+}
+
+.cap-dot.dot-black {
+    background: #78909c;
+    box-shadow: 0 0 6px rgba(120, 144, 156, 0.55);
+    border: 1px solid rgba(255,255,255,0.25);
+}
+
+/* Arena Layout */
+.arena-container {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+    position: relative;
+}
+
+.sidebar {
+    width: 250px;
+    background: #101d16;
+    border-right: 1px solid #243c2f;
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    gap: 12px;
+    overflow-y: auto;
+}
+
+.sidebar.right {
+    border-right: none;
+    border-left: 1px solid #243c2f;
+}
+
+.panel-section {
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.panel-header {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--gold);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.card-tray {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    min-height: 70px;
+    max-height: 180px;
+    overflow-y: auto;
+    background: rgba(0,0,0,0.25);
+    border-radius: 6px;
+    padding: 6px;
+    border: 1px dashed #2f5440;
+}
+
+.card-tray:empty::before {
+    content: attr(data-empty-text);
+    color: #557965;
+    font-size: 0.75rem;
+    font-style: italic;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 60px;
+}
+
+/* =====================================================================
+   📥 DIRECT INTERACTIVE SETUP RESERVE FRAME (2 DEDICATED SLOTS)
+   ===================================================================== */
+.card-tray.setup-reserve-frame {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    min-height: 66px;
+    padding: 6px 8px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1.5px dashed rgba(212, 175, 55, 0.45);
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.card-tray.setup-reserve-frame.can-drop-reserve {
+    border-color: var(--gold);
+    background: rgba(212, 175, 55, 0.08);
+    box-shadow: inset 0 0 14px rgba(212, 175, 55, 0.2);
+}
+
+.reserve-slot.empty-slot {
+    width: 58px;
+    height: 48px;
+    border-radius: 4px;
+    border: 1.5px dashed rgba(212, 175, 55, 0.5);
+    background: rgba(212, 175, 55, 0.05);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    color: rgba(212, 175, 55, 0.7);
+    font-size: 0.58rem;
+    font-weight: 800;
+    text-align: center;
+    line-height: 1.1;
+    box-sizing: border-box;
+    user-select: none;
+}
+
+.reserve-slot.empty-slot:hover {
+    border-color: var(--gold);
+    background: rgba(212, 175, 55, 0.16);
+    color: var(--gold);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+
+.reserve-slot.empty-slot.has-selection {
+    border-color: var(--gold) !important;
+    background: rgba(212, 175, 55, 0.22) !important;
+    color: #fff !important;
+    box-shadow: 0 0 12px var(--gold-glow);
+    animation: reservePulse 1.2s infinite;
+}
+
+@keyframes reservePulse {
+    0% { transform: scale(0.97); opacity: 0.8; }
+    50% { transform: scale(1.03); opacity: 1; }
+    100% { transform: scale(0.97); opacity: 0.8; }
+}
+
+/* Center Battlefield Viewport: Luxury Hardwood Parquet Suite in Art Mode */
+.board-viewport {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: var(--board-bg);
+    padding: 12px;
+    overflow-y: auto;
+    position: relative;
+    transition: background 0.3s ease;
+}
+
+body[data-card-style="art"] .board-viewport {
+    background: 
+        radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.85) 100%),
+        repeating-linear-gradient(
+            90deg,
+            #1e120b 0px,
+            #1e120b 68px,
+            #120a06 68px,
+            #120a06 70px,
+            #27180e 70px,
+            #27180e 138px,
+            #140b07 138px,
+            #140b07 140px,
+            #190f09 140px,
+            #190f09 208px,
+            #0f0805 208px,
+            #0f0805 210px
+        );
+    box-shadow: inset 0 0 120px rgba(0,0,0,0.95);
+}
+
+/* =====================================================================
+   🎰 REALISTIC LUXURY POKER TABLE (CASINO VIP SUITE)
+   ===================================================================== */
+.poker-table-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: auto;
+    padding: 10px;
+}
+
+.poker-table-rail {
+    background: linear-gradient(180deg, #2a312c 0%, #161b18 35%, #0e1210 75%, #070908 100%);
+    border-radius: 96px;
+    padding: 18px 16px;
+    box-shadow: 
+        0 30px 80px rgba(0,0,0,0.95), 
+        inset 0 3px 6px rgba(255,255,255,0.22),
+        inset 0 -6px 12px rgba(0,0,0,0.95);
+    border: 3px solid #141816;
+    position: relative;
+}
+
+.poker-table-track {
+    background: linear-gradient(135deg, #441f12 0%, #632d18 30%, #461f12 65%, #2a0f07 100%);
+    border-radius: 80px;
+    padding: 18px 14px;
+    border: 2px solid #75381e;
+    box-shadow: 
+        inset 0 3px 10px rgba(0,0,0,0.9),
+        0 2px 4px rgba(255,255,255,0.15);
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Brass Inset Drink Cup Holders */
+.brass-cup-holder {
+    position: absolute;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #181309 0%, #2f2514 60%, #0a0804 100%);
+    border: 2.5px solid #d4af37;
+    box-shadow: 
+        inset 0 3px 6px rgba(0,0,0,0.95),
+        0 1px 3px rgba(255,215,0,0.35);
+    z-index: 3;
+}
+.brass-cup-holder::after {
+    content: "";
+    position: absolute;
+    top: 3px; left: 3px; right: 3px; bottom: 3px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.15);
+}
+.cup-tl { top: 12px; left: 16px; }
+.cup-tr { top: 12px; right: 16px; }
+.cup-bl { bottom: 12px; left: 16px; }
+.cup-br { bottom: 12px; right: 16px; }
+
+/* Embedded Casino Chip Trays */
+.poker-chip-rack {
+    position: absolute;
+    display: flex;
+    gap: 4px;
+    padding: 3px 8px;
+    background: rgba(10, 6, 4, 0.7);
+    border: 1px solid #7c3e22;
+    border-radius: 12px;
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.9);
+    z-index: 3;
+}
+.rack-top { top: 8px; left: 50%; transform: translateX(-50%); }
+.rack-bottom { bottom: 8px; left: 50%; transform: translateX(-50%); }
+
+.poker-chip {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.8), inset 0 0 0 1px rgba(255,255,255,0.4);
+    position: relative;
+}
+.poker-chip::after {
+    content: "";
+    position: absolute;
+    top: 3px; left: 3px; right: 3px; bottom: 3px;
+    border-radius: 50%;
+    background: #d4af37;
+    border: 1px dashed rgba(0,0,0,0.5);
+}
+.chip-gold { background: #e67e22; }
+.chip-red { background: #c0392b; }
+.chip-blue { background: #2980b9; }
+.chip-green { background: #27ae60; }
+.chip-black { background: #1e272e; }
+
+/* The Emerald Casino Felt Baize */
+.poker-table-felt {
+    background: radial-gradient(ellipse at 50% 50%, #15452b 0%, #0d331f 65%, #071f13 100%);
+    border-radius: 66px;
+    padding: 16px 14px;
+    border: 1.5px solid #206c44;
+    box-shadow: 
+        inset 0 4px 18px rgba(0,0,0,0.8),
+        inset 0 0 40px rgba(0,0,0,0.45);
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+body[data-theme="wood"] .poker-table-felt {
+    background: radial-gradient(ellipse at 50% 50%, #361f15 0%, #24140d 65%, #130a06 100%);
+    border-color: #5c3017;
+}
+
+body[data-theme="obsidian"] .poker-table-felt {
+    background: radial-gradient(ellipse at 50% 50%, #131826 0%, #0c101a 65%, #05070c 100%);
+    border-color: #1e283d;
+}
+
+/* Inlaid Decorative Gold Filigree Rim */
+.table-filigree-rim {
+    position: absolute;
+    top: 5px; left: 5px; right: 5px; bottom: 5px;
+    border: 2px dashed rgba(212, 175, 55, 0.45);
+    border-radius: 60px;
+    pointer-events: none;
+    box-shadow: inset 0 0 10px rgba(212, 175, 55, 0.15);
+}
+
+.board-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 62px);
+    grid-template-rows: repeat(12, 52px);
+    gap: 3px;
+    background: rgba(0,0,0,0.22);
+    padding: 6px;
+    border-radius: 8px;
+    border: 1px solid rgba(212, 175, 55, 0.25);
+    position: relative;
+    z-index: 1;
+}
+
+/* =====================================================================
+   ⚔️ 4-PLAYER 15x15 PLUS-SHAPED CROSS BOARD
+   ===================================================================== */
+.board-grid.grid-4p {
+    grid-template-columns: repeat(15, 46px);
+    grid-template-rows: repeat(15, 40px);
+    gap: 2px;
+    padding: 4px;
+}
+
+.board-grid.grid-4p .tile {
+    width: 46px;
+    height: 40px;
+}
+
+.tile.tile-void {
+    visibility: hidden !important;
+    pointer-events: none !important;
+    border: none !important;
+    background: transparent !important;
+}
+
+.tile.tile-obstacle {
+    background: radial-gradient(circle at 50% 50%, #27140e 0%, #150905 100%) !important;
+    border: 1.5px dashed rgba(212, 175, 55, 0.45) !important;
+    cursor: not-allowed !important;
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.obstacle-icon {
+    font-size: 1rem;
+    opacity: 0.7;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.8));
+    pointer-events: none;
+}
+
+.tile.frontline-4p {
+    border: 1.5px solid rgba(212, 175, 55, 0.7) !important;
+    background: rgba(28, 58, 42, 0.9) !important;
+}
+
+.tile.frontline-4p::after {
+    content: attr(data-fl-label);
+    position: absolute;
+    bottom: 1px;
+    right: 2px;
+    font-size: 0.5rem;
+    font-weight: 800;
+    color: rgba(212, 175, 55, 0.75);
+    pointer-events: none;
+}
+
+.tile.tile-center {
+    background: rgba(16, 48, 32, 0.75);
+    border: 1px dashed rgba(212, 175, 55, 0.3);
+}
+
+.tile.tile-camp-a {
+    background: rgba(40, 18, 18, 0.45);
+}
+
+.tile.tile-camp-c {
+    background: rgba(40, 18, 18, 0.45);
+}
+
+.tile.tile-camp-b {
+    background: rgba(18, 22, 35, 0.45);
+}
+
+.tile.tile-camp-d {
+    background: rgba(18, 22, 35, 0.45);
+}
+
+.board-grid.grid-4p .card-unit {
+    width: 42px !important;
+    height: 36px !important;
+    border-radius: 4px;
+}
+
+.board-grid.grid-4p .art-card-top-left {
+    font-size: 0.65rem !important;
+    top: 1px;
+    left: 2px;
+}
+
+.board-grid.grid-4p .art-corner-role-text {
+    font-size: 0.42rem !important;
+    bottom: 1px;
+    left: 2px;
+}
+
+.board-grid.grid-4p .art-center-illustration {
+    max-height: 22px !important;
+    max-width: 22px !important;
+}
+
+.board-grid.grid-4p .art-center-illustration svg {
+    width: 22px !important;
+    height: 22px !important;
+}
+
+.board-grid.grid-4p .simplified-mode-unit .sim-pip-main {
+    font-size: 0.9rem !important;
+}
+
+.player-badge-pill {
+    position: absolute;
+    top: 1px;
+    right: 2px;
+    font-size: 0.5rem;
+    font-weight: 900;
+    padding: 0 2px;
+    border-radius: 2px;
+    line-height: 1.1;
+    z-index: 2;
+}
+
+.badge-a { background: #8e1515; color: #fff; }
+.badge-c { background: #b84014; color: #fff; }
+.badge-b { background: #1a2738; color: #72b0ea; }
+.badge-d { background: #261f36; color: #c49df5; }
+
+.tile {
+    width: 62px;
+    height: 52px;
+    background: rgba(14, 46, 29, 0.85);
+    border: 1px solid #1e5c3b;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.tile:hover {
+    background: var(--felt-light);
+}
+
+.tile.frontline {
+    background: rgba(23, 51, 38, 0.95);
+    border-color: #38674c;
+}
+
+.tile.frontline::after {
+    content: "BUFFER";
+    position: absolute;
+    font-size: 0.55rem;
+    color: rgba(255,255,255,0.12);
+    letter-spacing: 2px;
+    pointer-events: none;
+    font-weight: 800;
+}
+
+.tile.legal-move::before {
+    content: "";
+    width: 14px;
+    height: 14px;
+    background: var(--accent-glow);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--accent-glow);
+    pointer-events: none;
+    z-index: 5;
+    animation: pulse 1.2s infinite;
+}
+
+.tile.legal-attack {
+    border-color: var(--danger-glow) !important;
+    background: rgba(231, 76, 60, 0.25) !important;
+    box-shadow: inset 0 0 10px var(--danger-glow);
+}
+
+.tile.legal-drop {
+    border-color: var(--gold) !important;
+    background: rgba(212, 175, 55, 0.2) !important;
+}
+
+.tile.selected {
+    border: 2px solid var(--gold) !important;
+    box-shadow: 0 0 12px var(--gold-glow);
+    z-index: 6;
+}
+
+@keyframes pulse {
+    0% { transform: scale(0.85); opacity: 0.7; }
+    50% { transform: scale(1.15); opacity: 1; }
+    100% { transform: scale(0.85); opacity: 0.7; }
+}
+
+/* Card Visuals Container */
+.card-unit {
+    width: 58px;
+    height: 48px;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    font-weight: 700;
+    position: relative;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    cursor: pointer;
+}
+
+.card-unit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.7);
+}
+
+/* =====================================================================
+   🎨 ART MODE: HALF-CARD ON THE TABLE (SYMMETRIC TOP-HALF SLICE)
+   ===================================================================== */
+.card-unit.art-half-card {
+    border-radius: 4px 4px 1px 1px;
+    background: linear-gradient(180deg, #ffffff 0%, #f7f3eb 100%) !important;
+    border: 1px solid #c9bea9 !important;
+    border-bottom: 2px solid #b89738 !important;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.7);
+    padding: 1px 3px 0 3px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+}
+
+.card-unit.art-half-card.red-card {
+    color: #a81616 !important;
+}
+
+.card-unit.art-half-card.black-card {
+    color: #1a1a1a !important;
+}
+
+.half-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 12px;
+    line-height: 12px;
+    padding: 1px 1px 0 1px;
+    flex-shrink: 0;
+    font-family: "Georgia", "Baskerville", "Palatino", serif;
+}
+
+.half-rank {
+    font-size: 0.78rem;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.half-rank.joker-text {
+    font-size: 0.52rem;
+    font-weight: 900;
+    letter-spacing: 0.4px;
+    line-height: 1;
+}
+
+.half-suit-corner {
+    font-size: 0.78rem;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.half-card-body {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.half-card-body.clear-middle {
+    background: transparent;
+}
+
+.half-card-body.has-special-art {
+    margin: 0;
+}
+
+.half-card-svg {
+    max-width: 34px;
+    max-height: 20px;
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* Authentic Symmetrical Card Midline Divider at Bottom (Never clipped!) */
+.half-card-divider {
+    background: linear-gradient(90deg, #bfa035 0%, #d4af37 50%, #bfa035 100%);
+    color: #1a1405;
+    font-size: 0.46rem;
+    font-weight: 900;
+    text-align: center;
+    letter-spacing: 0.3px;
+    height: 13px;
+    line-height: 13px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 -3px;
+    padding: 0 1px;
+    box-sizing: border-box;
+    text-transform: uppercase;
+    white-space: nowrap;
+    box-shadow: 0 -1px 2px rgba(0,0,0,0.15);
+}
+
+/* Face-Down Half-Card on Table (Top Half of Symmetrical Royal Casino Guilloche) */
+body[data-card-style="art"] .card-unit.face-down {
+    border-radius: 4px 4px 1px 1px;
+    border: 1px solid #cfc5b0 !important;
+    border-bottom: 2px solid #8f742e !important;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.4);
+    position: relative;
+    overflow: hidden;
+}
+
+body[data-card-style="art"] .card-unit.face-down.red-side {
+    background: 
+        radial-gradient(circle at 50% 100%, #9e1a1a 0%, #680e0e 100%),
+        repeating-radial-gradient(circle at 50% 100%, rgba(255,255,255,0.18), rgba(255,255,255,0.18) 2px, transparent 2px, transparent 5px) !important;
+}
+
+body[data-card-style="art"] .card-unit.face-down.black-side {
+    background: 
+        radial-gradient(circle at 50% 100%, #1b263b 0%, #0d131f 100%),
+        repeating-radial-gradient(circle at 50% 100%, rgba(255,255,255,0.15), rgba(255,255,255,0.15) 2px, transparent 2px, transparent 5px) !important;
+}
+
+body[data-card-style="art"] .card-unit.face-down::after {
+    content: "❖";
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 1.15rem;
+    color: rgba(255,255,255,0.5);
+    text-shadow: 0 0 4px rgba(0,0,0,0.8);
+}
+
+/* =====================================================================
+   🎴 FULL-SIZE TWO-WAY SYMMETRICAL POKER CARDS (FOR CLASH & INSPECTION)
+   ===================================================================== */
+.full-poker-card {
+    width: 136px;
+    height: 190px;
+    background: linear-gradient(135deg, #ffffff 0%, #f7f3eb 100%);
+    border: 1px solid #c9bea9;
+    border-radius: 8px;
+    box-shadow: 0 10px 28px rgba(0,0,0,0.7), inset 0 0 0 1px rgba(212, 175, 55, 0.45);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 6px 8px;
+    position: relative;
+    box-sizing: border-box;
+}
+
+.full-poker-card.red-card { color: #a81616; }
+.full-poker-card.black-card { color: #1a1a1a; }
+
+.full-card-index {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1;
+    font-family: "Georgia", "Baskerville", "Palatino", serif;
+    position: absolute;
+}
+.full-card-index.top-left { top: 8px; left: 10px; }
+.full-card-index.bottom-right { bottom: 8px; right: 10px; transform: rotate(180deg); }
+
+.full-rank { font-size: 1.25rem; font-weight: 900; }
+.full-rank.joker-text { font-size: 0.68rem; font-weight: 900; letter-spacing: 0.5px; }
+.full-suit { font-size: 0.95rem; margin-top: 1px; }
+
+.full-card-center-frame {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 4px 18px;
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    border-radius: 4px;
+    background: rgba(255,255,255,0.45);
+    position: relative;
+    overflow: hidden;
+}
+
+.full-card-center-frame.clear-middle {
+    background: transparent;
+    border: none;
+}
+
+.full-figure-top {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.full-figure-bottom {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: rotate(180deg);
+}
+
+.full-card-midline-bar {
+    width: 100%;
+    background: linear-gradient(90deg, #bfa035 0%, #d4af37 50%, #bfa035 100%);
+    color: #181305;
+    font-size: 0.58rem;
+    font-weight: 900;
+    text-align: center;
+    letter-spacing: 0.8px;
+    padding: 2px 0;
+    text-transform: uppercase;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+    z-index: 2;
+}
+
+/* Full Size Card Back (Symmetric Casino Guilloche) */
+.full-poker-card.face-down {
+    border-radius: 8px;
+    border: 1px solid #cfc5b0 !important;
+    box-shadow: 0 10px 28px rgba(0,0,0,0.7), inset 0 0 0 3px #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.full-poker-card.face-down.red-side {
+    background: 
+        radial-gradient(circle at center, #9e1a1a 0%, #680e0e 100%),
+        repeating-radial-gradient(circle at center, rgba(255,255,255,0.18), rgba(255,255,255,0.18) 3px, transparent 3px, transparent 7px) !important;
+}
+.full-poker-card.face-down.black-side {
+    background: 
+        radial-gradient(circle at center, #1b263b 0%, #0d131f 100%),
+        repeating-radial-gradient(circle at center, rgba(255,255,255,0.15), rgba(255,255,255,0.15) 3px, transparent 3px, transparent 7px) !important;
+}
+.full-poker-card.face-down::after {
+    content: "❖";
+    font-size: 2.2rem;
+    color: rgba(255,255,255,0.5);
+    text-shadow: 0 0 6px rgba(0,0,0,0.9);
+}
+
+/* =====================================================================
+   ⚡ SIMPLIFIED MODE (MINIMALIST TACTICAL)
+   ===================================================================== */
+.card-unit.face-down {
+    background: repeating-linear-gradient(
+        45deg,
+        #1c2833,
+        #1c2833 6px,
+        #273746 6px,
+        #273746 12px
+    );
+    border: 1px solid #34495e;
+}
+
+.card-unit.face-down.red-side {
+    background: repeating-linear-gradient(
+        45deg,
+        #4a1515,
+        #4a1515 6px,
+        #6e1e1e 6px,
+        #6e1e1e 12px
+    );
+    border: 1px solid #8e2b2b;
+}
+
+.card-unit.face-down::after {
+    content: "♠";
+    font-size: 1.1rem;
+    color: rgba(255,255,255,0.18);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.card-unit.face-down.red-side::after {
+    content: "♥";
+    color: rgba(255,255,255,0.22);
+}
+
+.card-unit.face-up {
+    background: #fffdf7;
+    color: #222;
+    border: 1px solid #dcd6c8;
+}
+
+.card-unit.face-up.red-card {
+    color: #b01919;
+}
+
+.card-unit.face-up.black-card {
+    color: #1a1a1a;
+}
+
+.card-unit.mochigoma-sapper {
+    border: 2px solid var(--gold) !important;
+    background: linear-gradient(180deg, #fff9e6 0%, #ffeed1 100%) !important;
+    box-shadow: 0 0 8px var(--gold-glow);
+}
+
+.card-unit.mochigoma-sapper::before {
+    content: attr(data-badge-text);
+    position: absolute;
+    top: -6px;
+    right: -4px;
+    background: var(--gold);
+    color: #000;
+    font-size: 0.52rem;
+    padding: 1px 3px;
+    border-radius: 3px;
+    font-weight: 800;
+}
+
+/* =====================================================================
+   🎯 SIMPLIFIED TACTICAL MODE
+   ===================================================================== */
+.card-unit.simplified-mode-unit {
+    padding: 3px 5px 3px 5px !important;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.82rem;
+    font-weight: 900;
+    line-height: 1;
+    font-family: "Georgia", "Baskerville", "Palatino", serif;
+}
+
+.card-top .sim-rank {
+    font-size: 0.82rem;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.card-top .sim-rank.joker-text {
+    font-size: 0.52rem;
+    letter-spacing: 0.5px;
+    font-weight: 900;
+}
+
+.card-top .sim-suit {
+    font-size: 0.82rem;
+    font-weight: 900;
+    line-height: 1;
+}
+
+/* Joker Flag in Simplified Mode (Art Mode Flag SVG) */
+.card-center-flag {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    margin: 1px 0;
+}
+
+.card-center-flag .half-card-svg {
+    max-width: 34px;
+    max-height: 26px;
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* J, Q, K Center Space & Sub-Role Words */
+.card-center-space {
+    flex: 1;
+}
+
+.card-sub-role {
+    font-size: 0.50rem;
+    text-align: center;
+    font-weight: 900;
+    line-height: 1.1;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-bottom: 1px;
+    color: inherit;
+    opacity: 0.95;
+}
+
+/* Number Cards (A, 2..10) Clean Empty Center */
+.card-body-empty {
+    flex: 1;
+}
+
+/* Modals */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.78);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background: #14241c;
+    border: 2px solid var(--gold);
+    border-radius: 12px;
+    padding: 24px;
+    max-width: 540px;
+    width: 90%;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.9);
+    text-align: center;
+}
+
+.clash-stage {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    margin: 18px 0;
+}
+
+.clash-card-showcase {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.clash-vs {
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: var(--gold);
+    text-shadow: 0 0 10px var(--gold-glow);
+}
+
+.clash-verdict {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: #fff;
+    line-height: 1.4;
+}
+
+.move-log-box {
+    flex: 1;
+    background: rgba(0,0,0,0.3);
+    border-radius: 6px;
+    padding: 8px;
+    font-size: 0.75rem;
+    overflow-y: auto;
+    max-height: 160px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    border: 1px solid #233e30;
+}
+
+.log-entry {
+    color: #9cb5a8;
+}
+
+.log-entry.red { color: #ff9e9e; }
+.log-entry.black { color: #cfd8dc; }
+
+/* Settings Form Styling */
+.settings-group {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid #2d4c3a;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 14px;
+    text-align: left;
+}
+
+.settings-label {
+    font-size: 0.82rem;
+    font-weight: 800;
+    color: var(--gold);
+    margin-bottom: 8px;
+    display: block;
+    text-transform: uppercase;
+}
+
+.radio-row {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    font-size: 0.85rem;
+}
+
+.radio-row label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+/* =====================================================================
+   🏠 HOMEPAGE & MODE SELECTION SUITE
+   ===================================================================== */
+.homepage-screen {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+    overflow-y: auto;
+    background: var(--board-bg);
+    position: relative;
+    z-index: 5;
+}
+
+.home-header {
+    background: linear-gradient(180deg, #18221c 0%, #0d1612 100%);
+    border-bottom: 2px solid var(--wood-border);
+    padding: 10px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+
+.home-header-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+.home-header-controls button {
+    background: linear-gradient(135deg, #244131 0%, #15261d 100%);
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    font-weight: 800;
+    font-size: 0.85rem;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+}
+.home-header-controls button:hover {
+    background: linear-gradient(135deg, #325843 0%, #1e3629 100%);
+    box-shadow: 0 0 10px var(--gold-glow);
+    transform: translateY(-1px);
+}
+
+.homepage-main {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 24px 16px;
+}
+
+.homepage-card {
+    max-width: 680px;
+    width: 100%;
+    background: radial-gradient(circle at top, #193024 0%, #0d1712 100%);
+    border: 2px solid var(--gold);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.9), 0 0 25px rgba(212, 175, 55, 0.25);
+    border-radius: 16px;
+    padding: 28px;
+    text-align: left;
+}
+
+.homepage-hero {
+    text-align: center;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+    padding-bottom: 16px;
+    margin-bottom: 18px;
+}
+
+.homepage-title {
+    color: var(--gold);
+    font-size: 1.35rem;
+    font-weight: 900;
+    letter-spacing: 0.6px;
+    margin: 0;
+    text-shadow: 0 0 10px var(--gold-glow);
+}
+
+.homepage-subtitle {
+    font-size: 0.82rem;
+    color: #9cb5a8;
+    margin: 6px 0 0 0;
+}
+
+.game-screen {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.homepage-content {
+    max-width: 660px;
+    width: 92%;
+    max-height: 90vh;
+    overflow-y: auto;
+    text-align: left;
+    background: radial-gradient(circle at top, #193024 0%, #0d1712 100%);
+    border: 2px solid var(--gold);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.9), 0 0 25px rgba(212, 175, 55, 0.25);
+    border-radius: 14px;
+    padding: 24px;
+}
+
+.homepage-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+    padding-bottom: 12px;
+}
+
+.homepage-title {
+    color: var(--gold);
+    font-size: 1.25rem;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+    margin: 0;
+    text-shadow: 0 0 8px var(--gold-glow);
+}
+
+.homepage-subtitle {
+    font-size: 0.8rem;
+    color: #9cb5a8;
+    margin: 4px 0 0 0;
+}
+
+.close-x-btn {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #a0b5ab;
+    font-size: 1rem;
+    font-weight: 800;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.close-x-btn:hover {
+    border-color: var(--gold);
+    color: #fff;
+    background: rgba(212, 175, 55, 0.2);
+}
+
+.mode-tabs {
+    display: flex;
+    gap: 8px;
+    background: rgba(0,0,0,0.45);
+    padding: 5px;
+    border-radius: 8px;
+    margin: 18px 0;
+    border: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.mode-tab-btn {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #a4bab0;
+    padding: 10px 14px;
+    font-size: 0.9rem;
+    font-weight: 800;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.mode-tab-btn:hover {
+    color: #fff;
+    background: rgba(255,255,255,0.06);
+}
+.mode-tab-btn.active {
+    background: linear-gradient(135deg, #bfa035 0%, #8c7324 100%);
+    color: #0b130e;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+}
+
+.mode-panel {
+    display: none;
+}
+.mode-panel.active {
+    display: block;
+    animation: fadeIn 0.25s ease-out;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.home-section {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(212, 175, 55, 0.18);
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 14px;
+}
+
+.home-section-title {
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: var(--gold);
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.option-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.option-cards-grid.simple-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.option-cards-grid.simple-grid .option-card {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 14px 12px;
+    min-height: 52px;
+}
+
+.option-cards-grid.simple-grid .card-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+    letter-spacing: 0.5px;
+}
+
+.option-card {
+    background: rgba(16, 28, 22, 0.8);
+    border: 1.5px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 12px 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+}
+.option-card input {
+    display: none;
+}
+.option-card:hover {
+    border-color: rgba(212, 175, 55, 0.6);
+    background: rgba(24, 42, 33, 0.9);
+}
+.option-card.selected,
+.option-card:has(input:checked) {
+    border-color: var(--gold) !important;
+    background: rgba(212, 175, 55, 0.14) !important;
+    box-shadow: 0 0 12px rgba(212, 175, 55, 0.25);
+}
+
+.card-info .card-title {
+    font-size: 0.84rem;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 4px;
+}
+.card-info .card-desc {
+    font-size: 0.68rem;
+    color: #9cb5a8;
+    line-height: 1.35;
+}
+
+.side-selector-row {
+    display: flex;
+    gap: 10px;
+}
+
+.side-choice-card {
+    flex: 1;
+    background: rgba(16, 28, 22, 0.8);
+    border: 1.5px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+}
+.side-choice-card input {
+    display: none;
+}
+.side-choice-card:hover {
+    border-color: rgba(212, 175, 55, 0.6);
+    background: rgba(24, 42, 33, 0.9);
+}
+.side-choice-card.selected,
+.side-choice-card:has(input:checked) {
+    border-color: var(--gold) !important;
+    background: rgba(212, 175, 55, 0.14) !important;
+    box-shadow: 0 0 12px rgba(212, 175, 55, 0.25);
+}
+
+.side-badge {
+    font-size: 0.84rem;
+    font-weight: 800;
+}
+.badge-red { color: #ff8c8c; }
+.badge-black { color: #9bb5a9; }
+
+.home-select {
+    width: 100%;
+    padding: 9px 12px;
+    background: #0d1712;
+    border: 1px solid var(--gold);
+    color: #f0f7f4;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    outline: none;
+    cursor: pointer;
+}
+.home-select:focus {
+    box-shadow: 0 0 10px var(--gold-glow);
+}
+
+.home-actions {
+    margin-top: 18px;
+    text-align: center;
+}
+
+.launch-btn {
+    width: 100%;
+    padding: 12px 24px;
+    font-size: 1.05rem;
+    font-weight: 900;
+    letter-spacing: 0.6px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #d4af37 0%, #aa841c 100%);
+    color: #0b130e;
+    border: none;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.6), 0 0 12px rgba(212, 175, 55, 0.4);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.launch-btn:hover {
+    background: linear-gradient(135deg, #e3c457 0%, #b89124 100%);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.7), 0 0 18px rgba(212, 175, 55, 0.6);
+    transform: translateY(-1px);
+}
+
+/* Mobile Touch & Ergonomics */
+html, body {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Non-blocking Toast Notification */
+.toast-notice {
+    position: fixed;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    background: rgba(13, 23, 18, 0.96);
+    color: #f0f3f1;
+    border: 1px solid var(--gold);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8), 0 0 15px var(--gold-glow);
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    z-index: 10000;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    white-space: pre-line;
+    text-align: center;
+    max-width: 90vw;
+}
+
+.toast-notice.visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* Small Screen Board Responsive Scaling */
+@media (max-height: 720px) {
+    .tile {
+        width: 38px;
+        height: 33px;
+    }
+    .card-unit {
+        width: 34px !important;
+        height: 29px !important;
+    }
+    .board-container {
+        padding: 4px;
+    }
+}

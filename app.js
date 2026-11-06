@@ -451,6 +451,33 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     setupConfirmBtn.addEventListener('click', () => {
+        if (window.networkClient && window.networkClient.isOnlineMatch) {
+            const myColor = window.networkClient.playerColor;
+            const val = game.validateSetup(myColor);
+            if (!val.valid) {
+                showToast(val.errors.join('\n'));
+                return;
+            }
+            const minRow = myColor === 'red' ? 0 : 7;
+            const maxRow = myColor === 'red' ? 4 : 11;
+            const camp = [];
+            for (let r = minRow; r <= maxRow; r++) {
+                for (let c = 0; c < 5; c++) {
+                    const card = game.board[r][c];
+                    camp.push({ r, c, rank: card.rank, suit: card.suit });
+                }
+            }
+            const reserves = game.hands[myColor].startingReserves.map(c => ({
+                rank: c.rank,
+                suit: c.suit
+            }));
+            window.networkClient.submitLayout(camp, reserves);
+            setupConfirmBtn.disabled = true;
+            setupConfirmBtn.textContent = window.I18N ? window.I18N.t('waiting_for_opponent') : 'Waiting...';
+            showToast(window.I18N ? window.I18N.t('waiting_for_opponent') : 'Waiting for opponent...');
+            return;
+        }
+
         if (game.playerCount === 4) {
             game.gameState = 'playing';
             window.soundFX.playClash();
@@ -976,7 +1003,7 @@ document.addEventListener('DOMContentLoaded', () => {
         cardDiv.className = `card-unit ${teamColor}`;
 
         const isSettingUpThisCard = isSetup && card.player === game.setupPlayer;
-        const revealInPvE = game.mode === 'pve' && card.player === game.humanSide;
+        const revealInPvE = (game.mode === 'pve' || game.mode === 'online') && card.player === game.humanSide;
         const revealInSandbox = game.mode === 'sandbox';
 
         const shouldShow = isSettingUpThisCard || card.faceUp || revealInPvE || revealInSandbox;
@@ -1160,7 +1187,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Reserve cards: only visible to the owner
                 const isSettingUpThis = isSetup && (player === game.setupPlayer);
                 const isMyTurnInPvP = (game.mode === 'pvp' && player === game.currentTurn);
-                const isHumanInPvE = (game.mode === 'pve' && player === game.humanSide);
+                const isHumanInPvE = ((game.mode === 'pve' || game.mode === 'online') && player === game.humanSide);
                 const isSandbox = (game.mode === 'sandbox');
 
                 isVisible = isSettingUpThis || isSandbox || isHumanInPvE || (isMyTurnInPvP && !isSetup);
@@ -1543,6 +1570,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const legalDrops = game.getLegalDrops(null, game.selectedHandCard.card);
             const isValid = legalDrops.some(d => d.r === r && d.c === c);
             if (isValid) {
+                if (window.networkClient && window.networkClient.isOnlineMatch) {
+                    window.networkClient.sendAction({
+                        type: 'drop',
+                        handType: game.selectedHandCard.type,
+                        index: game.selectedHandCard.index,
+                        to: { r, c }
+                    });
+                    game.selectedHandCard = null;
+                    render();
+                    return;
+                }
                 game.dropCard(game.selectedHandCard.type, game.selectedHandCard.index, r, c);
                 game.selectedHandCard = null;
                 render();
@@ -1554,6 +1592,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const legalMoves = game.getLegalMoves(game.selectedTile.r, game.selectedTile.c);
             const isMoveValid = legalMoves.some(m => m.r === r && m.c === c);
             if (isMoveValid) {
+                if (window.networkClient && window.networkClient.isOnlineMatch) {
+                    window.networkClient.sendAction({
+                        type: 'move',
+                        from: { r: game.selectedTile.r, c: game.selectedTile.c },
+                        to: { r, c }
+                    });
+                    game.selectedTile = null;
+                    render();
+                    return;
+                }
                 game.movePiece(game.selectedTile.r, game.selectedTile.c, r, c);
                 game.selectedTile = null;
                 render();
@@ -1563,6 +1611,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const card = game.board[r][c];
         if (card && card.player === game.currentTurn) {
+            if (window.networkClient && window.networkClient.isOnlineMatch && card.player !== window.networkClient.playerColor) {
+                return;
+            }
             if (card.isImmobile) {
                 showToast(window.I18N.t('immobile_alert', { role: card.roleName }));
                 return;
@@ -1629,4 +1680,415 @@ document.addEventListener('DOMContentLoaded', () => {
     window.renderApp = render;
     updateAllLocalizedText();
     showHomepage();
+
+    // =========================================================================
+    // ONLINE MULTIPLAYER CONTROLLER (PHASE 4)
+    // =========================================================================
+
+    const tabPvpLocalBtn = document.getElementById('tabPvpLocalBtn');
+    const tabPvpOnlineBtn = document.getElementById('tabPvpOnlineBtn');
+    const pvpLocalContent = document.getElementById('pvpLocalContent');
+    const pvpOnlineContent = document.getElementById('pvpOnlineContent');
+    const onlineNicknameInput = document.getElementById('onlineNicknameInput');
+    const createOnlineRoomBtn = document.getElementById('createOnlineRoomBtn');
+    const refreshRoomsBtn = document.getElementById('refreshRoomsBtn');
+    const onlineRoomListContainer = document.getElementById('onlineRoomListContainer');
+    const onlineNotice = document.getElementById('onlineNotice');
+
+    const onlineStatusBarEl = document.getElementById('onlineStatusBar');
+    const onlineMatchLabel = document.getElementById('onlineMatchLabel');
+    const onlineTurnBanner = document.getElementById('onlineTurnBanner');
+    const onlineTimerPill = document.getElementById('onlineTimerPill');
+    const onlineDisconnectNotice = document.getElementById('onlineDisconnectNotice');
+    const onlineDisconnectMsg = document.getElementById('onlineDisconnectMsg');
+
+    const forfeitModal = document.getElementById('forfeitModal');
+    const confirmForfeitBtn = document.getElementById('confirmForfeitBtn');
+    const cancelForfeitBtn = document.getElementById('cancelForfeitBtn');
+
+    let onlineTimerInterval = null;
+    let onlineTimerSeconds = 60;
+
+    function confirmForfeitThen(actionCallback) {
+        if (window.networkClient && window.networkClient.isOnlineMatch && game.gameState === 'playing') {
+            if (forfeitModal) {
+                forfeitModal.style.display = 'flex';
+                const onConfirm = () => {
+                    forfeitModal.style.display = 'none';
+                    confirmForfeitBtn.removeEventListener('click', onConfirm);
+                    cancelForfeitBtn.removeEventListener('click', onCancel);
+                    window.networkClient.sendForfeit();
+                    window.networkClient.resetMatch();
+                    actionCallback();
+                };
+                const onCancel = () => {
+                    forfeitModal.style.display = 'none';
+                    confirmForfeitBtn.removeEventListener('click', onConfirm);
+                    cancelForfeitBtn.removeEventListener('click', onCancel);
+                };
+                confirmForfeitBtn.addEventListener('click', onConfirm);
+                cancelForfeitBtn.addEventListener('click', onCancel);
+                return;
+            }
+        }
+        actionCallback();
+    }
+
+    // Intercept homeBtn
+    if (homeBtn) {
+        homeBtn.onclick = (e) => {
+            e.preventDefault();
+            confirmForfeitThen(showHomepage);
+        };
+    }
+
+    // Intercept newGameBtn
+    if (newGameBtn) {
+        newGameBtn.onclick = (e) => {
+            e.preventDefault();
+            confirmForfeitThen(() => {
+                if (game.playerCount === 4) {
+                    start4PGame(game.fourPlayerMode, game.pvpAlliance, game.playerSeat);
+                } else if (game.mode === 'pve') {
+                    startPvEGame(game.aiLevel, game.humanSide);
+                } else {
+                    startPvP1v1Game('red');
+                }
+            });
+        };
+    }
+
+    // PvP sub-tab switching
+    if (tabPvpLocalBtn && tabPvpOnlineBtn) {
+        tabPvpLocalBtn.addEventListener('click', () => {
+            tabPvpLocalBtn.classList.add('active');
+            tabPvpOnlineBtn.classList.remove('active');
+            if (pvpLocalContent) pvpLocalContent.style.display = 'block';
+            if (pvpOnlineContent) pvpOnlineContent.style.display = 'none';
+        });
+
+        tabPvpOnlineBtn.addEventListener('click', () => {
+            tabPvpOnlineBtn.classList.add('active');
+            tabPvpLocalBtn.classList.remove('active');
+            if (pvpLocalContent) pvpLocalContent.style.display = 'none';
+            if (pvpOnlineContent) pvpOnlineContent.style.display = 'block';
+            loadOnlineLobby();
+        });
+    }
+
+    function loadOnlineLobby() {
+        if (!window.networkClient) return;
+        if (onlineNotice) onlineNotice.textContent = '';
+        window.networkClient.connectLobby();
+
+        window.networkClient.fetchPublicRooms().then(rooms => {
+            if (rooms === null) {
+                if (onlineNotice) {
+                    onlineNotice.textContent = window.I18N ? window.I18N.t('server_offline_msg') : 'Cannot connect to online server.';
+                    onlineNotice.style.color = '#ff9800';
+                }
+            } else {
+                renderLobbyRooms(rooms);
+            }
+        });
+    }
+
+    function renderLobbyRooms(rooms) {
+        if (!onlineRoomListContainer) return;
+        onlineRoomListContainer.innerHTML = '';
+
+        if (!rooms || rooms.length === 0) {
+            const emptyDiv = document.createElement('div');
+            emptyDiv.className = 'room-list-empty';
+            emptyDiv.style.textAlign = 'center';
+            emptyDiv.style.padding = '18px 10px';
+            emptyDiv.style.color = '#888';
+            emptyDiv.style.fontSize = '0.82rem';
+            emptyDiv.textContent = window.I18N ? window.I18N.t('no_rooms_found') : 'No waiting rooms available. Create one to begin!';
+            onlineRoomListContainer.appendChild(emptyDiv);
+            return;
+        }
+
+        rooms.forEach(room => {
+            const item = document.createElement('div');
+            item.className = 'room-item';
+
+            const info = document.createElement('div');
+            info.className = 'room-item-info';
+
+            const hostSpan = document.createElement('strong');
+            hostSpan.textContent = room.hostNickname || 'Host';
+
+            const sideBadge = document.createElement('span');
+            sideBadge.style.fontSize = '0.72rem';
+            sideBadge.style.padding = '1px 6px';
+            sideBadge.style.borderRadius = '3px';
+            sideBadge.style.background = room.sidePreference === 'red' ? '#b22222' : (room.sidePreference === 'black' ? '#222' : '#555');
+            sideBadge.style.color = '#fff';
+            sideBadge.textContent = room.sidePreference.toUpperCase();
+
+            info.appendChild(hostSpan);
+            info.appendChild(sideBadge);
+
+            const joinBtn = document.createElement('button');
+            joinBtn.className = 'room-join-btn';
+            joinBtn.textContent = window.I18N ? window.I18N.t('btn_join') : 'Join';
+            joinBtn.addEventListener('click', () => {
+                const nick = (onlineNicknameInput && onlineNicknameInput.value.trim()) || 'Player';
+                window.networkClient.joinRoom(room.roomId, nick);
+                if (onlineNotice) onlineNotice.textContent = window.I18N ? window.I18N.t('waiting_for_opponent') : 'Connecting...';
+            });
+
+            item.appendChild(info);
+            item.appendChild(joinBtn);
+            onlineRoomListContainer.appendChild(item);
+        });
+    }
+
+    if (refreshRoomsBtn) {
+        refreshRoomsBtn.addEventListener('click', () => {
+            loadOnlineLobby();
+        });
+    }
+
+    if (createOnlineRoomBtn) {
+        createOnlineRoomBtn.addEventListener('click', () => {
+            const nick = (onlineNicknameInput && onlineNicknameInput.value.trim()) || 'General';
+            const sidePref = document.querySelector('input[name="onlineSidePref"]:checked')?.value || 'random';
+            window.networkClient.createRoom(nick, sidePref);
+            if (onlineNotice) {
+                const hint = window.I18N ? window.I18N.t('room_created_hint') : 'Waiting for an opponent to join...';
+                const cancelText = window.I18N ? window.I18N.t('cancel_waiting_btn') : 'Cancel';
+                const copyText = window.I18N ? window.I18N.t('copy_room_link_btn') : 'Copy Link';
+                onlineNotice.innerHTML = `
+                    <div class="online-waiting-card">
+                        <div><span class="waiting-spinner"></span>${hint}</div>
+                        <div class="waiting-actions">
+                            <button id="cancelWaitingBtn" class="btn-secondary">${cancelText}</button>
+                            <button id="copyRoomLinkBtn" class="btn-secondary">${copyText}</button>
+                        </div>
+                    </div>
+                `;
+                const cancelBtn = document.getElementById('cancelWaitingBtn');
+                if (cancelBtn) {
+                    cancelBtn.addEventListener('click', () => {
+                        window.networkClient.resetMatch();
+                        loadOnlineLobby();
+                    });
+                }
+                const copyBtn = document.getElementById('copyRoomLinkBtn');
+                if (copyBtn) {
+                    copyBtn.addEventListener('click', () => {
+                        const url = window.location.origin + window.location.pathname;
+                        navigator.clipboard.writeText(url).then(() => {
+                            showToast(window.I18N ? window.I18N.t('room_link_copied') : 'Link copied!');
+                        }).catch(() => {
+                            showToast(url);
+                        });
+                    });
+                }
+            }
+        });
+    }
+
+    function updateOnlineTimer(remainingMs) {
+        clearInterval(onlineTimerInterval);
+        if (!onlineTimerPill) return;
+
+        onlineTimerSeconds = Math.max(0, Math.ceil(remainingMs / 1000));
+        onlineTimerPill.textContent = `⏱ ${onlineTimerSeconds}s`;
+
+        if (onlineTurnBanner) {
+            const isMyTurn = (window.networkClient && game.currentTurn === window.networkClient.playerColor);
+            onlineTurnBanner.textContent = isMyTurn ? 
+                (window.I18N ? window.I18N.t('your_turn_banner') : 'YOUR TURN') : 
+                (window.I18N ? window.I18N.t('opponent_turn_banner') : "OPPONENT'S TURN");
+            onlineTurnBanner.style.color = isMyTurn ? 'var(--gold)' : '#aaa';
+            onlineTurnBanner.style.borderColor = isMyTurn ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.2)';
+        }
+
+        onlineTimerInterval = setInterval(() => {
+            if (onlineTimerSeconds > 0) {
+                onlineTimerSeconds--;
+                onlineTimerPill.textContent = `⏱ ${onlineTimerSeconds}s`;
+                const isMyTurn = (window.networkClient && game.currentTurn === window.networkClient.playerColor);
+                if (onlineTimerSeconds <= 10 && isMyTurn && window.soundFX && typeof window.soundFX.playTimerTick === 'function') {
+                    window.soundFX.playTimerTick();
+                }
+            } else {
+                clearInterval(onlineTimerInterval);
+            }
+        }, 1000);
+    }
+
+    function stopOnlineTimer() {
+        clearInterval(onlineTimerInterval);
+    }
+
+    function applyServerStateView(payload) {
+        const wasMyTurn = (game.currentTurn === payload.yourSide && game.gameState === 'playing');
+        const isMyTurnNow = (payload.currentTurn === payload.yourSide && payload.gameState === 'playing');
+        if (!wasMyTurn && isMyTurnNow && window.soundFX && typeof window.soundFX.playTurnNotification === 'function') {
+            window.soundFX.playTurnNotification();
+        }
+
+        game.gameState = payload.gameState;
+        game.currentTurn = payload.currentTurn;
+        game.humanSide = payload.yourSide;
+        game.mode = 'online';
+
+        // Populate board
+        for (let r = 0; r < 12; r++) {
+            for (let c = 0; c < 5; c++) {
+                const p = payload.board[r][c];
+                if (!p) {
+                    game.board[r][c] = null;
+                } else {
+                    const card = new Card(p.player, p.suit, p.rank, p.rank === 'JOKER');
+                    card.faceUp = p.faceUp;
+                    card.isFlag = p.isFlag;
+                    card.isBomb = p.isBomb;
+                    card.isLandmine = p.isLandmine;
+                    card.isSapper = p.isSapper;
+                    card.isMochigoma = p.isMochigoma;
+                    game.board[r][c] = card;
+                }
+            }
+        }
+
+        // Populate hands
+        for (const color of ['red', 'black']) {
+            const h = payload.hands[color];
+            if (h) {
+                game.hands[color].startingReserves = (h.startingReserves || []).map(p => {
+                    const card = new Card(color, p.suit, p.rank, p.rank === 'JOKER');
+                    card.isBomb = p.isBomb;
+                    card.isLandmine = p.isLandmine;
+                    card.isFlag = p.isFlag;
+                    card.isSapper = p.isSapper;
+                    return card;
+                });
+                if (color !== payload.yourSide && h.startingReserveCount) {
+                    while (game.hands[color].startingReserves.length < h.startingReserveCount) {
+                        const fake = new Card(color, null, null, false);
+                        fake.faceUp = false;
+                        game.hands[color].startingReserves.push(fake);
+                    }
+                }
+
+                game.hands[color].mochigoma = (h.mochigoma || []).map(p => {
+                    const card = new Card(color, p.suit, p.rank, false);
+                    card.isMochigoma = true;
+                    card.faceUp = true;
+                    return card;
+                });
+            }
+        }
+
+        // Populate graveyard
+        game.graveyard = (payload.graveyard || []).map(p => {
+            const card = new Card(p.originalOwner, p.suit, p.rank, p.isFlag);
+            card.isMochigoma = p.isMochigoma;
+            return card;
+        });
+
+        // Hide setup toolbar, show status bar
+        if (setupToolbarEl) setupToolbarEl.style.display = 'none';
+        if (statusBarEl) statusBarEl.style.display = 'flex';
+        if (onlineStatusBarEl) onlineStatusBarEl.style.display = 'flex';
+        if (onlineDisconnectNotice) onlineDisconnectNotice.style.display = 'none';
+
+        if (onlineMatchLabel) {
+            const oppName = window.networkClient?.opponentNickname || 'Opponent';
+            onlineMatchLabel.textContent = `Online: ${payload.yourSide.toUpperCase()} vs ${oppName}`;
+        }
+
+        updateOnlineTimer(payload.turnTimerRemainingMs);
+        render();
+    }
+
+    // Wire Network Client Events
+    if (window.networkClient) {
+        window.networkClient.on('lobbyUpdate', (rooms) => {
+            renderLobbyRooms(rooms);
+        });
+
+        window.networkClient.on('setupStart', (payload) => {
+            showGame();
+            if (window.soundFX && typeof window.soundFX.playJoinNotification === 'function') {
+                window.soundFX.playJoinNotification();
+            }
+            if (onlineNotice) onlineNotice.textContent = '';
+            game.resetForNewGame({ mode: 'online', humanSide: payload.playerColor });
+            game.setupPlayer = payload.playerColor;
+            game.gameState = 'setup';
+
+            if (setupToolbarEl) setupToolbarEl.style.display = 'flex';
+            if (statusBarEl) statusBarEl.style.display = 'none';
+            if (onlineStatusBarEl) onlineStatusBarEl.style.display = 'none';
+
+            if (setupConfirmBtn) {
+                setupConfirmBtn.disabled = false;
+                setupConfirmBtn.textContent = window.I18N ? window.I18N.t('confirm_battle') : 'Confirm & Battle';
+            }
+
+            showToast(window.I18N ? window.I18N.t('opponent_joined') : 'Opponent joined! Deploy your formation.');
+            render();
+        });
+
+        window.networkClient.on('stateView', (payload) => {
+            applyServerStateView(payload);
+        });
+
+        window.networkClient.on('actionResult', (payload) => {
+            if (payload.clash) {
+                activeClash = payload.clash;
+                showClashModal(activeClash);
+                window.soundFX.playClash();
+            } else {
+                window.soundFX.playMove();
+            }
+        });
+
+        window.networkClient.on('opponentStatus', (payload) => {
+            if (!onlineDisconnectNotice) return;
+            if (!payload.connected) {
+                onlineDisconnectNotice.style.display = 'block';
+                const sec = Math.ceil((payload.gracePeriodRemainingMs || 60000) / 1000);
+                if (onlineDisconnectMsg) {
+                    onlineDisconnectMsg.textContent = window.I18N ? 
+                        window.I18N.t('opponent_disconnected_alert', { sec }) : 
+                        `Opponent disconnected! Reconnect grace: ${sec}s`;
+                }
+            } else {
+                onlineDisconnectNotice.style.display = 'none';
+            }
+        });
+
+        window.networkClient.on('gameOver', (payload) => {
+            game.gameState = 'gameover';
+            game.winner = payload.winner;
+            game.winReason = payload.reason;
+            stopOnlineTimer();
+            setTimeout(() => {
+                showGameOver(payload.reason);
+            }, 100);
+        });
+
+        window.networkClient.on('error', (payload) => {
+            if (payload.pleaseRefresh) {
+                alert(window.I18N ? window.I18N.t('refresh_required') : 'A newer version is available. Please refresh.');
+            } else {
+                showToast(payload.message || payload.code);
+            }
+        });
+
+        window.networkClient.on('connectionChange', (status) => {
+            if (status === 'offline' && onlineNotice) {
+                onlineNotice.textContent = window.I18N ? window.I18N.t('server_offline_msg') : 'Cannot connect to online server.';
+                onlineNotice.style.color = '#ff9800';
+            }
+        });
+    }
+
 });

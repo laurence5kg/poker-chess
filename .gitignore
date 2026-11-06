@@ -13,3 +13,7 @@ desktop.ini
 *.tmp
 audit_*.py
 tournament_smoke_test.py
+
+# Node & Cloudflare
+node_modules/
+.wrangler/

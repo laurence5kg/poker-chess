@@ -123,5 +123,5 @@ def check_file(path):
         print(f"✅ {path}: Syntax & bracket balance 100% verified!")
         return True
 
-for f in ['i18n.js', 'audio.js', 'game.js', 'app.js']:
+for f in ['i18n.js', 'audio.js', 'game.js', 'network.js', 'app.js']:
     check_file(f'C:\\Users\\27073\\.gemini\\antigravity\\scratch\\poker-shogi-junqi\\{f}')

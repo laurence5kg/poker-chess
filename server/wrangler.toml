@@ -1,0 +1,17 @@
+name = "poker-chess-server"
+main = "worker.js"
+compatibility_date = "2024-09-23"
+
+# Durable Object Bindings
+[durable_objects]
+bindings = [
+  { name = "LOBBY_DO", class_name = "LobbyDO" },
+  { name = "ROOM_DO", class_name = "RoomDO" }
+]
+
+[[migrations]]
+tag = "v1"
+new_classes = ["LobbyDO", "RoomDO"]
+
+[observability]
+enabled = false

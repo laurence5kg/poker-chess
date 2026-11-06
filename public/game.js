@@ -1,5 +1,30 @@
 // Poker Shogi & Junqi Game Engine (5x12 Board) - Fully Verified with 100-Game Invariant Testing
 
+// Headless / Server Environment Polyfill & Sound Stub
+if (typeof window === 'undefined') {
+    globalThis.window = {
+        I18N: null,
+        soundFX: {
+            playMove: () => {},
+            playClash: () => {},
+            playBomb: () => {},
+            playDefuse: () => {},
+            playCardFlip: () => {},
+            playVictory: () => {}
+        },
+        renderApp: null
+    };
+} else if (!window.soundFX) {
+    window.soundFX = {
+        playMove: () => {},
+        playClash: () => {},
+        playBomb: () => {},
+        playDefuse: () => {},
+        playCardFlip: () => {},
+        playVictory: () => {}
+    };
+}
+
 const SUITS = {
     RED: ['♥', '♦'],
     BLACK: ['♠', '♣']
@@ -2571,4 +2596,24 @@ class GameEngine {
     }
 }
 
-window.GameEngine = GameEngine;
+// Universal Module Definition (UMD) & Environment Exports
+if (typeof window !== 'undefined') {
+    window.GameEngine = GameEngine;
+    window.Card = Card;
+    window.SUITS = SUITS;
+    window.RANKS = RANKS;
+    window.OFFICER_RANKS = OFFICER_RANKS;
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { GameEngine, Card, SUITS, RANKS, OFFICER_RANKS };
+}
+
+if (typeof globalThis !== 'undefined') {
+    globalThis.GameEngine = GameEngine;
+    globalThis.Card = Card;
+    globalThis.SUITS = SUITS;
+    globalThis.RANKS = RANKS;
+    globalThis.OFFICER_RANKS = OFFICER_RANKS;
+}
+

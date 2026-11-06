@@ -1,0 +1,12 @@
+{
+  "name": "poker-chess-server",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/server_test.js",
+    "dev": "wrangler dev"
+  },
+  "devDependencies": {
+    "wrangler": "^4.158.0"
+  }
+}

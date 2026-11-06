@@ -4,8 +4,8 @@ root_dir = r'C:\Users\27073\.gemini\antigravity\scratch\poker-shogi-junqi'
 pub_dir = os.path.join(root_dir, 'public')
 os.makedirs(pub_dir, exist_ok=True)
 
-# 1. Copy runtime files: app.js, game.js, i18n.js, audio.js, style.css
-for fname in ['app.js', 'game.js', 'i18n.js', 'audio.js', 'style.css']:
+# 1. Copy runtime files: app.js, game.js, network.js, i18n.js, audio.js, style.css
+for fname in ['app.js', 'game.js', 'network.js', 'i18n.js', 'audio.js', 'style.css']:
     src = os.path.join(root_dir, fname)
     dst = os.path.join(pub_dir, fname)
     shutil.copy2(src, dst)
@@ -34,7 +34,8 @@ og_tags = '''    <link rel="canonical" href="./">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="alternate icon" href="favicon.ico">'''
 
-html = html.replace('    <link rel="stylesheet" href="style.css?v=1.0.0">', og_tags + '\n    <link rel="stylesheet" href="style.css?v=1.0.0">')
+if '<meta property="og:type"' not in html:
+    html = html.replace('    <link rel="stylesheet" href="style.css?v=1.0.0">', og_tags + '\n    <link rel="stylesheet" href="style.css?v=1.0.0">')
 
 with open(os.path.join(pub_dir, 'index.html'), 'w', encoding='utf-8') as f:
     f.write(html)
@@ -221,6 +222,10 @@ desktop.ini
 *.tmp
 audit_*.py
 tournament_smoke_test.py
+
+# Node & Cloudflare
+node_modules/
+.wrangler/
 '''
 with open(os.path.join(root_dir, '.gitignore'), 'w', encoding='utf-8') as f:
     f.write(gitignore_content)

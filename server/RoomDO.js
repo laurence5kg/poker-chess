@@ -439,6 +439,8 @@ export class RoomDO {
 
         // Execute authoritative action
         let actionResult = null;
+        const actionPlayer = this.currentTurn;
+        this.engine.lastClashResult = null;
         if (matchedAction.type === 'move') {
             this.engine.movePiece(matchedAction.from.r, matchedAction.from.c, matchedAction.to.r, matchedAction.to.c);
         } else if (matchedAction.type === 'drop') {
@@ -446,8 +448,16 @@ export class RoomDO {
         }
 
         actionResult = {
-            action: { type: matchedAction.type, from: matchedAction.from, to: matchedAction.to, handType: matchedAction.handType, index: matchedAction.index },
+            action: {
+                type: matchedAction.type,
+                player: actionPlayer,
+                from: matchedAction.from,
+                to: matchedAction.to,
+                handType: matchedAction.handType,
+                index: matchedAction.index
+            },
             clash: this.engine.lastClashResult ? {
+                id: this.engine.lastClashResult.id || Math.random(),
                 attacker: this.sanitizeCardForClash(this.engine.lastClashResult.attacker),
                 defender: this.sanitizeCardForClash(this.engine.lastClashResult.defender),
                 winner: this.engine.lastClashResult.winner,
@@ -491,15 +501,17 @@ export class RoomDO {
         if (!card) return null;
         return {
             player: card.player,
-            originalOwner: card.originalOwner,
+            originalOwner: card.originalOwner || card.player,
+            team: card.team || card.player,
             rank: card.rank,
             suit: card.suit,
             roleName: card.roleName,
-            isFlag: card.isFlag,
-            isBomb: card.isBomb,
-            isLandmine: card.isLandmine,
-            isSapper: card.isSapper,
-            isMochigoma: card.isMochigoma
+            isFlag: !!card.isFlag,
+            isBomb: !!card.isBomb,
+            isLandmine: !!card.isLandmine,
+            isSapper: !!card.isSapper,
+            isMochigoma: !!card.isMochigoma,
+            faceUp: true
         };
     }
 

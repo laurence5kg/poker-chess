@@ -892,6 +892,7 @@ class GameEngine {
         this.board[fromR][fromC] = null;
 
         if (!defender) {
+            this.lastClashResult = null;
             this.board[toR][toC] = attacker;
             window.soundFX.playMove();
             const pos = `(${String.fromCharCode(65 + toC)}${toR + 1})`;
@@ -1201,6 +1202,7 @@ class GameEngine {
     }
 
     dropCard(handType, index, targetR, targetC) {
+        this.lastClashResult = null;
         const player = this.currentTurn;
         if (this.playerCount === 4) {
             const camp = this.getCampCells(player);

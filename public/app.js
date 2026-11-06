@@ -361,6 +361,13 @@ document.addEventListener('DOMContentLoaded', () => {
         activeClash = null;
         render();
 
+        if (game.gameState === 'gameover') {
+            setTimeout(() => {
+                showGameOver(game.winReason);
+            }, 100);
+            return;
+        }
+
         if (game.mode === 'pve' && game.currentTurn === game.botSide && game.gameState === 'playing') {
             setTimeout(() => {
                 game.runBotTurn();
@@ -1418,7 +1425,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Simplified Mode Clash Card Renderer
     function getSimplifiedClashCardHTML(card, label) {
         const isMochi = card.isMochigoma;
-        let cleanRole = isMochi ? window.I18N.t('role_conscript') : card.roleName;
+        let cleanRole = isMochi ? window.I18N.t('role_conscript') : ((typeof card.getRoleName === 'function') ? card.getRoleName() : (card.roleName || 'Officer'));
         if (card.isLandmine) {
             cleanRole = (window.I18N && window.I18N.currentLang === 'zh') ? '地雷' : 'Mine';
         }
@@ -1444,7 +1451,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // On-Table & Trays: Symmetrical Top-Half Slice
     function getHalfArtCardHTML(card) {
         const isSpecial = card.isFlag || card.isBomb || card.isLandmine;
-        const roleName = card.getRoleName();
+        const roleName = (typeof card.getRoleName === 'function') ? card.getRoleName() : (card.roleName || 'Officer');
         const svg = isSpecial ? getCardArtSVG(card, true) : '';
 
         // Number cards & J, Q, K: Top-left has Rank, Top-right has Suit
@@ -1468,7 +1475,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function getFullSizeArtCardHTML(card) {
         const isRed = card.originalOwner === 'red';
         const isSpecial = card.isFlag || card.isBomb || card.isLandmine;
-        const roleName = card.getRoleName();
+        const roleName = (typeof card.getRoleName === 'function') ? card.getRoleName() : (card.roleName || 'Officer');
         const svg = isSpecial ? getCardArtSVG(card, false) : '';
         const rankLeft = card.isFlag ? 'JOKER' : card.rank;
         const suitRight = card.isFlag ? '' : card.suit;
@@ -1645,17 +1652,98 @@ document.addEventListener('DOMContentLoaded', () => {
         render();
     }
 
+    function getLocalizedClashVerdict(clash) {
+        if (!clash) return '';
+        const a = (clash.attacker instanceof Card) ? clash.attacker : deserializeCard(clash.attacker, 'red');
+        const d = (clash.defender instanceof Card) ? clash.defender : deserializeCard(clash.defender, 'black');
+        if (!a || !d) return clash.outcomeText || '';
+
+        if (!window.I18N) return clash.outcomeText || '';
+
+        const isZh = window.I18N.currentLang === 'zh';
+        const aName = isZh ? (a.player === 'red' ? '红方' : '黑方') : a.player.toUpperCase();
+        const dName = isZh ? (d.player === 'red' ? '红方' : '黑方') : d.player.toUpperCase();
+
+        // 1. Flag Assault
+        if (d.isFlag) {
+            return a.player === 'red' ? window.I18N.t('win_red') : window.I18N.t('win_black');
+        }
+
+        // 2. Bomb Detonations
+        if (a.isBomb || d.isBomb) {
+            return window.I18N.t('bomb_explosion');
+        }
+
+        // 3. Landmine Defense
+        if (d.isLandmine) {
+            if (a.isSapper || a.isMochigoma) {
+                return window.I18N.t('mine_cleared');
+            } else {
+                const aRole = (typeof a.getRoleName === 'function') ? a.getRoleName() : (a.roleName || 'Officer');
+                return window.I18N.t('mine_detonation', { attacker: aRole });
+            }
+        }
+
+        // 4. Conscript vs Conscript
+        if (a.isMochigoma && d.isMochigoma) {
+            return window.I18N.t('conscript_clash');
+        }
+
+        // 5. Native Sapper vs Native Sapper
+        if (a.isSapper && d.isSapper && !a.isMochigoma && !d.isMochigoma) {
+            return window.I18N.t('sapper_clash');
+        }
+
+        // 6. Native Sapper vs Conscript
+        if (a.isSapper && !a.isMochigoma && d.isMochigoma) {
+            return window.I18N.t('sapper_executed_conscript', { player: aName });
+        }
+        if (a.isMochigoma && d.isSapper && !d.isMochigoma) {
+            return window.I18N.t('sapper_executed_conscript', { player: dName });
+        }
+
+        // 7. Conscript vs Officer
+        if (a.isMochigoma) {
+            return window.I18N.t('officer_executed_conscript', { player: dName });
+        }
+        if (d.isMochigoma) {
+            return window.I18N.t('officer_executed_conscript', { player: aName });
+        }
+
+        // 8. Native Sapper vs Officer
+        if (a.isSapper && !a.isMochigoma) {
+            return window.I18N.t('officer_captured_sapper', { player: dName });
+        }
+        if (d.isSapper && !d.isMochigoma) {
+            return window.I18N.t('sapper_captured_by_officer', { player: aName });
+        }
+
+        // 9. Officer vs Officer
+        if (clash.winner === 'attacker') {
+            return window.I18N.t('officer_victory', { player: aName });
+        } else if (clash.winner === 'defender') {
+            return window.I18N.t('officer_defeat', { player: dName });
+        } else {
+            return window.I18N.t('officer_tie');
+        }
+    }
+
     function showClashModal(clash) {
+        if (!clash) return;
         clashModalEl.style.display = 'flex';
 
+        const attackerCard = (clash.attacker instanceof Card) ? clash.attacker : deserializeCard(clash.attacker, 'red');
+        const defenderCard = (clash.defender instanceof Card) ? clash.defender : deserializeCard(clash.defender, 'black');
+
         if (window.I18N.currentCardStyle === 'art') {
-            clashAttackerEl.innerHTML = getFullSizeArtCardHTML(clash.attacker);
-            clashDefenderEl.innerHTML = getFullSizeArtCardHTML(clash.defender);
+            clashAttackerEl.innerHTML = getFullSizeArtCardHTML(attackerCard);
+            clashDefenderEl.innerHTML = getFullSizeArtCardHTML(defenderCard);
         } else {
-            clashAttackerEl.innerHTML = getSimplifiedClashCardHTML(clash.attacker, window.I18N.t('clash_attacker'));
-            clashDefenderEl.innerHTML = getSimplifiedClashCardHTML(clash.defender, window.I18N.t('clash_defender'));
+            clashAttackerEl.innerHTML = getSimplifiedClashCardHTML(attackerCard, window.I18N.t('clash_attacker'));
+            clashDefenderEl.innerHTML = getSimplifiedClashCardHTML(defenderCard, window.I18N.t('clash_defender'));
         }
-        clashVerdictEl.textContent = clash.outcomeText;
+        const localizedVerdict = getLocalizedClashVerdict(clash) || clash.outcomeText;
+        clashVerdictEl.textContent = localizedVerdict;
 
         if (autoCloseTimer) clearTimeout(autoCloseTimer);
         autoCloseTimer = setTimeout(() => {
@@ -1941,7 +2029,26 @@ document.addEventListener('DOMContentLoaded', () => {
         clearInterval(onlineTimerInterval);
     }
 
+    function deserializeCard(p, fallbackOwner = 'red') {
+        if (!p) return null;
+        if (p instanceof Card) return p;
+        const player = p.player || fallbackOwner;
+        const isJoker = !!p.isFlag || p.rank === 'JOKER';
+        const card = new Card(player, p.suit, p.rank, isJoker);
+        card.originalOwner = p.originalOwner || player;
+        card.team = p.team || player;
+        card.faceUp = !!p.faceUp;
+        card.isFlag = !!p.isFlag || isJoker;
+        card.isBomb = !!p.isBomb || p.rank === 'K';
+        card.isLandmine = !!p.isLandmine || p.rank === 'Q' || p.rank === 'J';
+        card.isSapper = !!p.isSapper || p.rank === 'A' || !!p.isMochigoma;
+        card.isMochigoma = !!p.isMochigoma;
+        return card;
+    }
+
     function applyServerStateView(payload) {
+        if (!payload) return;
+
         const wasMyTurn = (game.currentTurn === payload.yourSide && game.gameState === 'playing');
         const isMyTurnNow = (payload.currentTurn === payload.yourSide && payload.gameState === 'playing');
         if (!wasMyTurn && isMyTurnNow && window.soundFX && typeof window.soundFX.playTurnNotification === 'function') {
@@ -1960,14 +2067,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!p) {
                     game.board[r][c] = null;
                 } else {
-                    const card = new Card(p.player, p.suit, p.rank, p.rank === 'JOKER');
-                    card.faceUp = p.faceUp;
-                    card.isFlag = p.isFlag;
-                    card.isBomb = p.isBomb;
-                    card.isLandmine = p.isLandmine;
-                    card.isSapper = p.isSapper;
-                    card.isMochigoma = p.isMochigoma;
-                    game.board[r][c] = card;
+                    game.board[r][c] = deserializeCard(p, p.player);
                 }
             }
         }
@@ -1976,14 +2076,7 @@ document.addEventListener('DOMContentLoaded', () => {
         for (const color of ['red', 'black']) {
             const h = payload.hands[color];
             if (h) {
-                game.hands[color].startingReserves = (h.startingReserves || []).map(p => {
-                    const card = new Card(color, p.suit, p.rank, p.rank === 'JOKER');
-                    card.isBomb = p.isBomb;
-                    card.isLandmine = p.isLandmine;
-                    card.isFlag = p.isFlag;
-                    card.isSapper = p.isSapper;
-                    return card;
-                });
+                game.hands[color].startingReserves = (h.startingReserves || []).map(p => deserializeCard(p, color));
                 if (color !== payload.yourSide && h.startingReserveCount) {
                     while (game.hands[color].startingReserves.length < h.startingReserveCount) {
                         const fake = new Card(color, null, null, false);
@@ -1993,20 +2086,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 game.hands[color].mochigoma = (h.mochigoma || []).map(p => {
-                    const card = new Card(color, p.suit, p.rank, false);
-                    card.isMochigoma = true;
-                    card.faceUp = true;
-                    return card;
+                    const c = deserializeCard(p, color);
+                    c.isMochigoma = true;
+                    c.faceUp = true;
+                    return c;
                 });
             }
         }
 
         // Populate graveyard
-        game.graveyard = (payload.graveyard || []).map(p => {
-            const card = new Card(p.originalOwner, p.suit, p.rank, p.isFlag);
-            card.isMochigoma = p.isMochigoma;
-            return card;
-        });
+        game.graveyard = (payload.graveyard || []).map(p => deserializeCard(p, p.originalOwner));
 
         // Hide setup toolbar, show status bar
         if (setupToolbarEl) setupToolbarEl.style.display = 'none';
@@ -2059,10 +2148,36 @@ document.addEventListener('DOMContentLoaded', () => {
         window.networkClient.on('actionResult', (payload) => {
             if (payload.clash) {
                 activeClash = payload.clash;
+                activeClash.attacker = deserializeCard(payload.clash.attacker, 'red');
+                activeClash.defender = deserializeCard(payload.clash.defender, 'black');
+                game.lastClashResult = activeClash;
                 showClashModal(activeClash);
-                window.soundFX.playClash();
+
+                // Sound FX Parity with PvE
+                const s = payload.clash.sound;
+                if (s === 'bomb') {
+                    window.soundFX.playBomb();
+                } else if (s === 'defuse') {
+                    window.soundFX.playDefuse();
+                } else if (s === 'victory') {
+                    window.soundFX.playVictory();
+                } else {
+                    window.soundFX.playClash();
+                }
+
+                // Log combat verdict to battlefield log
+                const verdict = getLocalizedClashVerdict(activeClash) || payload.clash.outcomeText;
+                if (verdict) game.log(verdict);
             } else {
                 window.soundFX.playMove();
+                if (payload.action?.to) {
+                    const toPos = `(${String.fromCharCode(65 + payload.action.to.c)}${payload.action.to.r + 1})`;
+                    const p = payload.action.player ? payload.action.player.toUpperCase() : 'Unit';
+                    const isZh = window.I18N && window.I18N.currentLang === 'zh';
+                    const pName = isZh ? (payload.action.player === 'red' ? '红方' : '黑方') : p;
+                    const msg = window.I18N ? window.I18N.t('advance_move', { player: pName, pos: toPos }) : `${p} advanced to ${toPos}.`;
+                    game.log(msg);
+                }
             }
         });
 
@@ -2086,9 +2201,11 @@ document.addEventListener('DOMContentLoaded', () => {
             game.winner = payload.winner;
             game.winReason = payload.reason;
             stopOnlineTimer();
-            setTimeout(() => {
-                showGameOver(payload.reason);
-            }, 100);
+            if (clashModalEl.style.display !== 'flex') {
+                setTimeout(() => {
+                    showGameOver(payload.reason);
+                }, 100);
+            }
         });
 
         window.networkClient.on('setupConfirmed', (payload) => {

@@ -36,7 +36,7 @@ class NetworkClient {
 
     getDefaultServerUrl() {
         // Use local dev worker when running on localhost, otherwise cloudflare worker
-        if (typeof window !== 'undefined') {
+        if (typeof window !== 'undefined' && window.location && window.location.hostname) {
             const host = window.location.hostname;
             if (host === 'localhost' || host === '127.0.0.1') {
                 return 'ws://localhost:8787';
@@ -111,6 +111,7 @@ class NetworkClient {
             this.connectionStatus = 'connected';
             this.reconnectAttempts = 0;
             this.emit('connectionChange', 'connected');
+            this.startHeartbeat();
 
             // If we have an existing session for this room, attempt auto-reconnect
             if (mode === 'room' && this.sessionToken) {
@@ -128,6 +129,7 @@ class NetworkClient {
         };
 
         this.ws.onclose = (event) => {
+            this.stopHeartbeat();
             if (this.connectionStatus === 'connected') {
                 this.connectionStatus = 'reconnecting';
                 this.emit('connectionChange', 'reconnecting');
@@ -205,9 +207,28 @@ class NetworkClient {
             case 'game_over':
                 this.emit('gameOver', msg.payload);
                 break;
+            case 'pong':
+                this.lastPong = Date.now();
+                break;
             case 'error':
                 this.emit('error', msg.payload);
                 break;
+        }
+    }
+
+    startHeartbeat() {
+        this.stopHeartbeat();
+        this.heartbeatTimer = setInterval(() => {
+            if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                this.send('ping', { time: Date.now() });
+            }
+        }, 25000);
+    }
+
+    stopHeartbeat() {
+        if (this.heartbeatTimer) {
+            clearInterval(this.heartbeatTimer);
+            this.heartbeatTimer = null;
         }
     }
 
@@ -215,7 +236,15 @@ class NetworkClient {
         if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
             return false;
         }
-        const packet = JSON.stringify({ v: 1, type, payload });
+        // Auto-attach sessionToken and playerColor if available for bulletproof identification
+        const enrichedPayload = { ...payload };
+        if (this.sessionToken && !enrichedPayload.sessionToken) {
+            enrichedPayload.sessionToken = this.sessionToken;
+        }
+        if (this.playerColor && !enrichedPayload.playerColor) {
+            enrichedPayload.playerColor = this.playerColor;
+        }
+        const packet = JSON.stringify({ v: 1, type, payload: enrichedPayload });
         this.ws.send(packet);
         return true;
     }
@@ -253,18 +282,31 @@ class NetworkClient {
     }
 
     submitLayout(camp, reserves) {
-        return this.send('submit_layout', { camp, reserves });
+        return this.send('submit_layout', {
+            camp,
+            reserves,
+            sessionToken: this.sessionToken,
+            playerColor: this.playerColor
+        });
     }
 
     sendAction(action) {
-        return this.send('action', action);
+        return this.send('action', {
+            ...action,
+            sessionToken: this.sessionToken,
+            playerColor: this.playerColor
+        });
     }
 
     sendForfeit() {
-        return this.send('forfeit', {});
+        return this.send('forfeit', {
+            sessionToken: this.sessionToken,
+            playerColor: this.playerColor
+        });
     }
 
     close() {
+        this.stopHeartbeat();
         clearTimeout(this.reconnectTimer);
         if (this.ws) {
             this.ws.onclose = null;

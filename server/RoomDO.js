@@ -77,14 +77,24 @@ export class RoomDO {
     // Cloudflare WebSocket Hibernation API handlers
     async webSocketMessage(ws, message) {
         try {
-            if (typeof message === 'string' && message.length > 4096) {
+            if (typeof message === 'string' && message.length > 16384) {
                 ws.send(JSON.stringify({ v: 1, type: 'error', payload: { code: 'PAYLOAD_TOO_LARGE' } }));
                 return;
             }
-            const msg = JSON.parse(message);
+            const msg = typeof message === 'string' ? JSON.parse(message) : message;
+            
+            // Re-bind player socket immediately if recognized
+            const color = this.getPlayerColorByWs(ws, msg);
+            if (color && this.players[color]) {
+                this.players[color].ws = ws;
+                this.players[color].connected = true;
+            }
+            
             await this.handleClientMessage(ws, msg);
         } catch (err) {
-            ws.send(JSON.stringify({ v: 1, type: 'error', payload: { code: 'MALFORMED_MESSAGE', message: err.message } }));
+            try {
+                ws.send(JSON.stringify({ v: 1, type: 'error', payload: { code: 'MALFORMED_MESSAGE', message: err.message } }));
+            } catch (e) {}
         }
     }
 
@@ -112,6 +122,9 @@ export class RoomDO {
         }
 
         switch (msg.type) {
+            case 'ping':
+                ws.send(JSON.stringify({ v: 1, type: 'pong', payload: { time: Date.now() } }));
+                return;
             case 'create_room':
                 return this.handleCreateRoom(ws, msg.payload);
             case 'join_room':
@@ -167,6 +180,16 @@ export class RoomDO {
             setupComplete: false,
             setupData: null
         };
+
+        if (typeof ws.serializeAttachment === 'function') {
+            try {
+                ws.serializeAttachment({
+                    playerColor: assignedSide,
+                    sessionToken: token,
+                    roomId: this.roomId
+                });
+            } catch (e) {}
+        }
 
         ws.send(JSON.stringify({
             v: 1,
@@ -239,6 +262,16 @@ export class RoomDO {
             setupData: null
         };
 
+        if (typeof ws.serializeAttachment === 'function') {
+            try {
+                ws.serializeAttachment({
+                    playerColor: guestColor,
+                    sessionToken: token,
+                    roomId: this.roomId
+                });
+            } catch (e) {}
+        }
+
         ws.send(JSON.stringify({
             v: 1,
             type: 'room_joined',
@@ -271,13 +304,13 @@ export class RoomDO {
         await this.persistState();
     }
 
-    async handleSubmitLayout(ws, payload) {
+    async handleSubmitLayout(ws, payload = {}) {
         if (this.gameState !== 'setup') {
             ws.send(JSON.stringify({ v: 1, type: 'error', payload: { code: 'NOT_IN_SETUP_PHASE' } }));
             return;
         }
 
-        const playerColor = this.getPlayerColorByWs(ws);
+        const playerColor = this.getPlayerColorByWs(ws, { payload });
         if (!playerColor) {
             ws.send(JSON.stringify({ v: 1, type: 'error', payload: { code: 'UNAUTHORIZED' } }));
             return;
@@ -287,6 +320,26 @@ export class RoomDO {
         if (!Array.isArray(camp) || camp.length !== 25 || !Array.isArray(reserves) || reserves.length !== 2) {
             ws.send(JSON.stringify({ v: 1, type: 'error', payload: { code: 'INVALID_LAYOUT_COUNTS' } }));
             return;
+        }
+
+        const minRow = playerColor === 'red' ? 0 : 7;
+        const maxRow = playerColor === 'red' ? 4 : 11;
+        const frontRow = playerColor === 'red' ? 4 : 7;
+
+        // Verify all 25 coordinates belong strictly to player's camp zone
+        const seenCoords = new Set();
+        for (const piece of camp) {
+            if (piece.r === undefined || piece.c === undefined || 
+                piece.r < minRow || piece.r > maxRow || piece.c < 0 || piece.c > 4) {
+                ws.send(JSON.stringify({ v: 1, type: 'error', payload: { code: 'COORDINATE_OUT_OF_BOUNDS', errors: [`Card at (${piece.r}, ${piece.c}) is outside ${playerColor.toUpperCase()} camp.`] } }));
+                return;
+            }
+            const key = `${piece.r},${piece.c}`;
+            if (seenCoords.has(key)) {
+                ws.send(JSON.stringify({ v: 1, type: 'error', payload: { code: 'DUPLICATE_COORDINATE', errors: [`Duplicate card placement at (${piece.r}, ${piece.c}).`] } }));
+                return;
+            }
+            seenCoords.add(key);
         }
 
         // Validate deployment on temporary sub-engine
@@ -355,7 +408,7 @@ export class RoomDO {
             return;
         }
 
-        const playerColor = this.getPlayerColorByWs(ws);
+        const playerColor = this.getPlayerColorByWs(ws, { payload });
         if (!playerColor || playerColor !== this.currentTurn) {
             ws.send(JSON.stringify({ v: 1, type: 'error', payload: { code: 'NOT_YOUR_TURN' } }));
             return;
@@ -585,10 +638,8 @@ export class RoomDO {
 
     broadcastStateViews() {
         for (const side of ['red', 'black']) {
-            if (this.players[side]?.ws && this.players[side]?.connected) {
-                const view = this.projectStateView(side);
-                this.sendToPlayer(side, view);
-            }
+            const view = this.projectStateView(side);
+            this.sendToPlayer(side, view);
         }
     }
 
@@ -610,6 +661,16 @@ export class RoomDO {
         // Reconnect player
         this.players[color].ws = ws;
         this.players[color].connected = true;
+
+        if (typeof ws.serializeAttachment === 'function') {
+            try {
+                ws.serializeAttachment({
+                    playerColor: color,
+                    sessionToken,
+                    roomId: this.roomId
+                });
+            } catch (e) {}
+        }
 
         if (this.disconnectTimer) {
             clearTimeout(this.disconnectTimer);
@@ -696,8 +757,8 @@ export class RoomDO {
         });
     }
 
-    async handleForfeit(ws) {
-        const color = this.getPlayerColorByWs(ws);
+    async handleForfeit(ws, payload = {}) {
+        const color = this.getPlayerColorByWs(ws, { payload });
         if (!color || this.gameState !== 'playing') return;
 
         const winner = color === 'red' ? 'black' : 'red';
@@ -720,18 +781,75 @@ export class RoomDO {
 
     // --- Helpers & Utilities ---
 
-    getPlayerColorByWs(ws) {
+    getPlayerColorByWs(ws, msg = null) {
+        // 1. WebSocket Attachment (survives Cloudflare DO hibernation)
+        if (typeof ws?.deserializeAttachment === 'function') {
+            try {
+                const att = ws.deserializeAttachment();
+                if (att && att.playerColor) {
+                    const color = att.playerColor;
+                    if (this.players[color]) {
+                        this.players[color].ws = ws;
+                        this.players[color].connected = true;
+                    }
+                    return color;
+                }
+            } catch (e) {}
+        }
+
+        // 2. Direct memory equality
         if (this.players.red?.ws === ws) return 'red';
         if (this.players.black?.ws === ws) return 'black';
+
+        // 3. Fallback to sessionToken in message payload or root
+        const token = msg?.payload?.sessionToken || msg?.sessionToken;
+        if (token) {
+            for (const color of ['red', 'black']) {
+                if (this.players[color]?.sessionToken === token) {
+                    this.players[color].ws = ws;
+                    this.players[color].connected = true;
+                    if (typeof ws?.serializeAttachment === 'function') {
+                        try {
+                            ws.serializeAttachment({
+                                playerColor: color,
+                                sessionToken: token,
+                                roomId: this.roomId
+                            });
+                        } catch (e) {}
+                    }
+                    return color;
+                }
+            }
+        }
+
         return null;
     }
 
     sendToPlayer(color, msgObj) {
-        const player = this.players[color];
-        if (player?.ws && player?.connected) {
+        let ws = this.players[color]?.ws;
+        // If memory ws is absent or closed, look through this.state.getWebSockets()
+        if ((!ws || ws.readyState !== 1) && this.state && typeof this.state.getWebSockets === 'function') {
+            try {
+                for (const activeWs of this.state.getWebSockets()) {
+                    if (typeof activeWs.deserializeAttachment === 'function') {
+                        const att = activeWs.deserializeAttachment();
+                        if (att && att.playerColor === color) {
+                            ws = activeWs;
+                            if (this.players[color]) {
+                                this.players[color].ws = ws;
+                                this.players[color].connected = true;
+                            }
+                            break;
+                        }
+                    }
+                }
+            } catch (e) {}
+        }
+
+        if (ws) {
             try {
                 const json = JSON.stringify(msgObj.v ? msgObj : { v: 1, ...msgObj });
-                player.ws.send(json);
+                ws.send(json);
             } catch (err) {
                 // Connection lost
             }
@@ -739,14 +857,8 @@ export class RoomDO {
     }
 
     broadcast(msgObj) {
-        const json = JSON.stringify(msgObj.v ? msgObj : { v: 1, ...msgObj });
-        for (const side of ['red', 'black']) {
-            if (this.players[side]?.ws && this.players[side]?.connected) {
-                try {
-                    this.players[side].ws.send(json);
-                } catch (e) {}
-            }
-        }
+        this.sendToPlayer('red', msgObj);
+        this.sendToPlayer('black', msgObj);
     }
 
     async persistState() {

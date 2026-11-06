@@ -452,10 +452,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     setupConfirmBtn.addEventListener('click', () => {
         if (window.networkClient && window.networkClient.isOnlineMatch) {
-            const myColor = window.networkClient.playerColor;
+            const myColor = window.networkClient.playerColor || game.setupPlayer;
             const val = game.validateSetup(myColor);
             if (!val.valid) {
+                if (window.soundFX && typeof window.soundFX.playIllegalMove === 'function') {
+                    window.soundFX.playIllegalMove();
+                }
+                setupConfirmBtn.classList.remove('btn-shake');
+                void setupConfirmBtn.offsetWidth;
+                setupConfirmBtn.classList.add('btn-shake');
                 showToast(val.errors.join('\n'));
+                render();
                 return;
             }
             const minRow = myColor === 'red' ? 0 : 7;
@@ -475,6 +482,15 @@ document.addEventListener('DOMContentLoaded', () => {
             setupConfirmBtn.disabled = true;
             setupConfirmBtn.textContent = window.I18N ? window.I18N.t('waiting_for_opponent') : 'Waiting...';
             showToast(window.I18N ? window.I18N.t('waiting_for_opponent') : 'Waiting for opponent...');
+
+            clearTimeout(window.__setupConfirmWatchdog);
+            window.__setupConfirmWatchdog = setTimeout(() => {
+                if (game.gameState === 'setup' && setupConfirmBtn && setupConfirmBtn.disabled) {
+                    setupConfirmBtn.disabled = false;
+                    setupConfirmBtn.textContent = 'Retry Confirm';
+                    showToast('Server did not respond in time. Please tap Retry.');
+                }
+            }, 12000);
             return;
         }
 
@@ -2075,11 +2091,25 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 100);
         });
 
+        window.networkClient.on('setupConfirmed', (payload) => {
+            clearTimeout(window.__setupConfirmWatchdog);
+            if (setupConfirmBtn) {
+                setupConfirmBtn.disabled = true;
+                setupConfirmBtn.textContent = window.I18N ? window.I18N.t('waiting_for_opponent') : 'Waiting...';
+            }
+        });
+
         window.networkClient.on('error', (payload) => {
+            clearTimeout(window.__setupConfirmWatchdog);
             if (payload.pleaseRefresh) {
                 alert(window.I18N ? window.I18N.t('refresh_required') : 'A newer version is available. Please refresh.');
             } else {
-                showToast(payload.message || payload.code);
+                const msg = payload.errors ? payload.errors.join('\n') : (payload.message || payload.code || 'An error occurred.');
+                showToast(msg);
+                if (game.gameState === 'setup' && setupConfirmBtn) {
+                    setupConfirmBtn.disabled = false;
+                    setupConfirmBtn.textContent = window.I18N ? window.I18N.t('confirm_battle') : 'Confirm & Battle';
+                }
             }
         });
 

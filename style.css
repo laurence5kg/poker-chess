@@ -1970,3 +1970,33 @@ html, body {
     border-color: #e74c3c !important;
     box-shadow: 0 0 10px rgba(231, 76, 60, 0.6) !important;
 }
+
+/* Movable Unit Visual Affordance */
+.card-unit.can-move {
+    box-shadow: 0 0 8px rgba(46, 204, 113, 0.65), inset 0 0 4px rgba(46, 204, 113, 0.4);
+    animation: can-move-pulse 2s infinite ease-in-out;
+}
+
+@keyframes can-move-pulse {
+    0%, 100% {
+        box-shadow: 0 0 6px rgba(46, 204, 113, 0.5), inset 0 0 3px rgba(46, 204, 113, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 12px rgba(46, 204, 113, 0.9), inset 0 0 6px rgba(46, 204, 113, 0.6);
+    }
+}
+
+.btn-pulse {
+    animation: btn-glow-pulse 1.5s infinite;
+}
+
+@keyframes btn-glow-pulse {
+    0%, 100% {
+        box-shadow: 0 0 8px var(--gold-glow);
+        transform: scale(1);
+    }
+    50% {
+        box-shadow: 0 0 18px var(--gold-glow), 0 0 25px rgba(212, 175, 55, 0.8);
+        transform: scale(1.03);
+    }
+}

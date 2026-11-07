@@ -196,6 +196,9 @@ const I18N = {
             max_reserves_reached: "Reserves already has the maximum of 2 cards!",
             select_card_first: "Please first select a card on the board or in the Unplaced tray to move to Reserves.",
             immobile_alert: "{role} is strictly immobile! It cannot move or initiate attacks.",
+            unit_blocked: "Unit is blocked by friendly troops in front. Advance your frontline first!",
+            formation_ready_prompt: "Formation deployed! Tap 'Confirm & Battle' to begin marching.",
+            turn_1_hint: "Turn 1: Select a frontline unit to march forward!",
             drop_camp_only: "You can only place cards in your 5×5 home camp!",
             // Online PvP
             pvp_local_title: "Local (Same Device)",
@@ -397,6 +400,9 @@ const I18N = {
             max_reserves_reached: "初始预备队最多只能保留2张牌！",
             select_card_first: "请先在营地或待布阵栏选中一张牌，再点击放入预备队。",
             immobile_alert: "{role} 为不可移动单位，无法移动或主动进攻！",
+            unit_blocked: "该部队被前方友军阻挡，请先移动前线部队！",
+            formation_ready_prompt: "阵型已就绪！点击【确认开战】即可发起进攻！",
+            turn_1_hint: "第1回合：选择前沿部队前进！",
             drop_camp_only: "只能将部队空降至本方5×5营地内的空位！",
             // Online PvP
             pvp_local_title: "本地同屏",

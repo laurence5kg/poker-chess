@@ -468,51 +468,32 @@ class GameEngine {
             this.rows = 12;
             this.cols = 5;
             this.board = Array(12).fill(null).map(() => Array(5).fill(null));
-            this.gameState = 'setup';
+            this.hands = {
+                red: { startingReserves: [], mochigoma: [] },
+                black: { startingReserves: [], mochigoma: [] }
+            };
+            this.unplacedCards = {
+                red: [],
+                black: []
+            };
 
-            if (this.mode === 'pve') {
-                if (this.humanSide === 'black') {
-                    this.currentTurn = 'black';
-                    this.setupPlayer = 'black';
-                    this.unplacedCards = {
-                        red: [],
-                        black: this.createDeck('black')
-                    };
-                    this.hands = {
-                        red: { startingReserves: [], mochigoma: [] },
-                        black: { startingReserves: [], mochigoma: [] }
-                    };
-                    // Red bot automatically deploys formation
-                    this.autoSetup('red');
-                } else {
-                    this.currentTurn = 'red';
-                    this.setupPlayer = 'red';
-                    this.unplacedCards = {
-                        red: this.createDeck('red'),
-                        black: []
-                    };
-                    this.hands = {
-                        red: { startingReserves: [], mochigoma: [] },
-                        black: { startingReserves: [], mochigoma: [] }
-                    };
-                    // Black bot automatically deploys formation
-                    this.autoSetup('black');
-                }
+            const startSide = this.humanSide === 'black' ? 'black' : 'red';
+            this.currentTurn = startSide;
+            this.setupPlayer = startSide;
+
+            // Automatically deploy balanced formations for BOTH camps so armies are NEVER empty on launch!
+            this.autoSetup('red');
+            this.autoSetup('black');
+
+            if (this.mode === 'online') {
+                // Online multiplayer: players review/confirm their secret deployment
+                this.gameState = 'setup';
+            } else if (options && options.customSetup) {
+                // Explicit custom deployment requested
+                this.gameState = 'setup';
             } else {
-                // PvP 1v1 or sandbox
-                const startSide = this.humanSide === 'black' ? 'black' : 'red';
-                this.currentTurn = startSide;
-                this.setupPlayer = startSide;
-
-                this.unplacedCards = {
-                    red: this.createDeck('red'),
-                    black: this.createDeck('black')
-                };
-
-                this.hands = {
-                    red: { startingReserves: [], mochigoma: [] },
-                    black: { startingReserves: [], mochigoma: [] }
-                };
+                // PvE and Local PvP: immediately ready to battle on game launch!
+                this.gameState = 'playing';
             }
         }
 

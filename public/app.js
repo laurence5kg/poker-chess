@@ -220,6 +220,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 aiLevel,
                 humanSide
             });
+            if (window.I18N && typeof showToast === 'function') {
+                showToast(window.I18N.t('turn_1_hint'));
+            }
         });
     }
 
@@ -237,6 +240,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     mode: 'pvp',
                     humanSide
                 });
+                if (window.I18N && typeof showToast === 'function') {
+                    showToast(window.I18N.t('turn_1_hint'));
+                }
             } else if (pvpType === '2v2') {
                 const allianceRadio = document.querySelector('input[name="pvp2v2Alliance"]:checked');
                 const pvpAlliance = allianceRadio ? allianceRadio.value : 'clubs';
@@ -930,6 +936,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 for (let c = 0; c < 5; c++) {
                     const tile = document.createElement('div');
                     tile.className = 'tile';
+                    tile.setAttribute('data-r', r);
+                    tile.setAttribute('data-c', c);
                     if (r === 5 || r === 6) tile.classList.add('frontline');
 
                     if (game.selectedTile && game.selectedTile.r === r && game.selectedTile.c === c) {
@@ -1052,6 +1060,16 @@ document.addEventListener('DOMContentLoaded', () => {
             cardDiv.classList.add('face-down');
             if (window.I18N.currentCardStyle === 'art') {
                 cardDiv.classList.add('art-half-card');
+            }
+        }
+
+        if (!isSetup && card.player === game.currentTurn && !card.isImmobile && typeof r === 'number' && typeof c === 'number') {
+            const isMyTurnOnline = (window.networkClient && window.networkClient.isOnlineMatch) ? (card.player === window.networkClient.playerColor) : true;
+            if (isMyTurnOnline) {
+                const moves = game.getLegalMoves(r, c);
+                if (moves && moves.length > 0) {
+                    cardDiv.classList.add('can-move');
+                }
             }
         }
 
@@ -1528,7 +1546,16 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (!isInsideCamp) {
-                showToast(window.I18N.t('drop_camp_only'));
+                if (game.selectedTile) {
+                    showToast(window.I18N ? window.I18N.t('formation_ready_prompt') : 'Formation deployed! Tap Confirm & Battle to begin marching.');
+                    if (setupConfirmBtn) {
+                        setupConfirmBtn.classList.remove('btn-pulse');
+                        void setupConfirmBtn.offsetWidth;
+                        setupConfirmBtn.classList.add('btn-pulse');
+                    }
+                } else {
+                    showToast(window.I18N.t('drop_camp_only'));
+                }
                 return;
             }
 
@@ -1640,6 +1667,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (card.isImmobile) {
                 showToast(window.I18N.t('immobile_alert', { role: card.roleName }));
                 return;
+            }
+            const legalMoves = game.getLegalMoves(r, c);
+            if (legalMoves.length === 0) {
+                showToast(window.I18N ? window.I18N.t('unit_blocked') : 'Unit is blocked by friendly troops in front. Advance your frontline first!');
             }
             game.selectedHandCard = null;
             game.selectedTile = { r, c };
@@ -2135,6 +2166,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (setupConfirmBtn) {
                 setupConfirmBtn.disabled = false;
                 setupConfirmBtn.textContent = window.I18N ? window.I18N.t('confirm_battle') : 'Confirm & Battle';
+                setupConfirmBtn.classList.add('btn-pulse');
             }
 
             showToast(window.I18N ? window.I18N.t('opponent_joined') : 'Opponent joined! Deploy your formation.');

@@ -1,4 +1,4 @@
-# Poker Chess (扑克军棋 / 扑克将棋军棋)
+# Poker Chess (扑克军棋)
 
 > **English** | [中文说明](#中文说明)
 
